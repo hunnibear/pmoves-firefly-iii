@@ -1,0 +1,182 @@
+{% extends "layout.default" %}
+
+{% set title = "AI Chat" %}
+{% set pageTitle = "Financial Assistant Chat" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="content-header">
+                <h1>
+                    💬 AI Financial Assistant
+                    <small class="text-muted">Ask questions about your finances</small>
+                </h1>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('ai.index') }}">AI Dashboard</a></li>
+                    <li class="breadcrumb-item active">Chat</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card direct-chat direct-chat-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Chat with your Financial AI</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Chat Messages -->
+                    <div class="direct-chat-messages" id="chat-messages" style="height: 400px;">
+                        <!-- Welcome Message -->
+                        <div class="direct-chat-msg">
+                            <div class="direct-chat-infos clearfix">
+                                <span class="direct-chat-name float-left">AI Assistant</span>
+                                <span class="direct-chat-timestamp float-right">Now</span>
+                            </div>
+                            <img class="direct-chat-img" src="/images/avatar-placeholder.png" alt="AI">
+                            <div class="direct-chat-text">
+                                Hello! I'm your AI financial assistant. I can help you analyze your spending patterns, 
+                                categorize transactions, and provide insights about your finances. What would you like to know?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="card-footer">
+                        <form id="chat-form">
+                            <div class="input-group">
+                                <input type="text" id="chat-input" placeholder="Ask me about your finances..." class="form-control">
+                                <span class="input-group-append">
+                                    <button type="submit" class="btn btn-primary" id="send-button">
+                                        <i class="fas fa-paper-plane"></i> Send
+                                    </button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suggested Questions -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">💡 Suggested Questions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><a href="#" class="suggested-question">What were my biggest expenses last month?</a></li>
+                                <li><a href="#" class="suggested-question">How much did I spend on groceries this year?</a></li>
+                                <li><a href="#" class="suggested-question">Show me my spending trends</a></li>
+                                <li><a href="#" class="suggested-question">Are there any unusual transactions?</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><a href="#" class="suggested-question">What categories do I spend most on?</a></li>
+                                <li><a href="#" class="suggested-question">How can I improve my budget?</a></li>
+                                <li><a href="#" class="suggested-question">Compare this month to last month</a></li>
+                                <li><a href="#" class="suggested-question">Help me categorize recent transactions</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ JS_NONCE }}">
+$(document).ready(function() {
+    let isProcessing = false;
+    
+    // Handle form submission
+    $('#chat-form').submit(function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+    
+    // Handle suggested questions
+    $('.suggested-question').click(function(e) {
+        e.preventDefault();
+        const question = $(this).text();
+        $('#chat-input').val(question);
+        sendMessage();
+    });
+    
+    function sendMessage() {
+        if (isProcessing) return;
+        
+        const message = $('#chat-input').val().trim();
+        if (!message) return;
+        
+        isProcessing = true;
+        $('#send-button').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Thinking...');
+        
+        // Add user message to chat
+        appendMessage('user', message, 'You');
+        $('#chat-input').val('');
+        
+        // Send to AI
+        $.post('{{ route("ai.chat.send") }}', {
+            message: message,
+            _token: '{{ csrf_token() }}'
+        })
+        .done(function(data) {
+            if (data.success) {
+                appendMessage('ai', data.response, 'AI Assistant');
+            } else {
+                appendMessage('ai', 'Sorry, I encountered an error: ' + (data.error || 'Unknown error'), 'AI Assistant');
+            }
+        })
+        .fail(function(xhr) {
+            const errorMsg = xhr.responseJSON ? xhr.responseJSON.error : 'Connection failed';
+            appendMessage('ai', 'Sorry, I\'m having trouble right now: ' + errorMsg, 'AI Assistant');
+        })
+        .always(function() {
+            isProcessing = false;
+            $('#send-button').prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Send');
+        });
+    }
+    
+    function appendMessage(type, message, sender) {
+        const timestamp = new Date().toLocaleTimeString();
+        const isUser = type === 'user';
+        const alignment = isUser ? 'right' : '';
+        const imgSrc = isUser ? '/images/user-placeholder.png' : '/images/avatar-placeholder.png';
+        
+        const messageHtml = `
+            <div class="direct-chat-msg ${alignment}">
+                <div class="direct-chat-infos clearfix">
+                    <span class="direct-chat-name float-${isUser ? 'right' : 'left'}">${sender}</span>
+                    <span class="direct-chat-timestamp float-${isUser ? 'left' : 'right'}">${timestamp}</span>
+                </div>
+                <img class="direct-chat-img" src="${imgSrc}" alt="${sender}">
+                <div class="direct-chat-text">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        $('#chat-messages').append(messageHtml);
+        $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+    }
+});
+</script>
+{% endblock %}

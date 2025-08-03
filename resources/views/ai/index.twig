@@ -1,0 +1,162 @@
+{% extends "layout.default" %}
+
+{% set title = "AI Assistant" %}
+{% set pageTitle = "AI Dashboard" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="content-header">
+                <h1>
+                    🤖 AI Financial Assistant
+                    <small class="text-muted">Smart features powered by local AI models</small>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- AI Status Card -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">AI Status</h3>
+                </div>
+                <div class="card-body">
+                    <div id="ai-status">
+                        <i class="fas fa-spinner fa-spin"></i> Checking connection...
+                    </div>
+                    <button id="test-connection" class="btn btn-sm btn-primary mt-2">
+                        Test Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">AI Features</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-brain"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Smart Categorization</span>
+                                    <span class="info-box-number">Auto-categorize transactions</span>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: 70%"></div>
+                                    </div>
+                                    <span class="progress-description">Active</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-comments"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">AI Chat</span>
+                                    <span class="info-box-number">Financial insights</span>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: 90%"></div>
+                                    </div>
+                                    <span class="progress-description">
+                                        <a href="{{ route('ai.chat') }}" class="text-white">
+                                            <u>Start Chat</u>
+                                        </a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Anomaly Detection</span>
+                                    <span class="info-box-number">Unusual transactions</span>
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: 60%"></div>
+                                    </div>
+                                    <span class="progress-description">Monitoring</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integration Status -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Integration Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-database"></i> Supabase Integration</h5>
+                            <p class="text-muted">
+                                Connected to local Supabase instance for advanced data processing and AI features.
+                            </p>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> PostgreSQL Database</li>
+                                <li><i class="fas fa-check text-success"></i> Vector Embeddings Support</li>
+                                <li><i class="fas fa-check text-success"></i> Real-time Processing</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-robot"></i> Local AI Models</h5>
+                            <p class="text-muted">
+                                Powered by Ollama with Llama 3.2 for privacy-focused AI processing.
+                            </p>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Ollama LLM Server</li>
+                                <li><i class="fas fa-check text-success"></i> Local Processing (Privacy)</li>
+                                <li><i class="fas fa-check text-success"></i> No Data Leaves Your System</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ JS_NONCE }}">
+$(document).ready(function() {
+    // Test AI connection on page load
+    testAIConnection();
+    
+    $('#test-connection').click(function() {
+        testAIConnection();
+    });
+});
+
+function testAIConnection() {
+    $('#ai-status').html('<i class="fas fa-spinner fa-spin"></i> Testing connection...');
+    
+    $.get('{{ route("ai.test-connection") }}')
+        .done(function(data) {
+            if (data.success) {
+                $('#ai-status').html('<i class="fas fa-check-circle text-success"></i> AI Services Online');
+            } else {
+                $('#ai-status').html('<i class="fas fa-times-circle text-danger"></i> AI Unavailable');
+            }
+        })
+        .fail(function() {
+            $('#ai-status').html('<i class="fas fa-times-circle text-danger"></i> Connection Failed');
+        });
+}
+</script>
+{% endblock %}

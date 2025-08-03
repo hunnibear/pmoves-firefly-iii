@@ -1,0 +1,96 @@
+# Docker Compose for Firefly III only - connects to external Supabase CLI
+
+services:
+  # Firefly III Application
+  app:
+    image: fireflyiii/core:latest
+    hostname: firefly-iii
+    container_name: firefly_iii_core
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env.local
+    environment:
+      # Core Application Settings
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8080
+      - DEFAULT_LANGUAGE=en_US
+      - DEFAULT_LOCALE=equal
+      - TZ=UTC
+      - TRUSTED_PROXIES=**
+      
+      # Database Settings (External Supabase CLI)
+      - DB_CONNECTION=pgsql
+      - DB_HOST=host.docker.internal
+      - DB_PORT=54322
+      - DB_DATABASE=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - PGSQL_SCHEMA=public
+      
+      # Cache & Session Settings
+      - CACHE_DRIVER=database
+      - SESSION_DRIVER=database
+      - QUEUE_DRIVER=database
+      
+      # Authentication
+      - AUTHENTICATION_GUARD=web
+      - AUTHENTICATION_GUARD_HEADER=Remote-User
+      - AUTHENTICATION_GUARD_EMAIL=
+      
+      # Firefly III specific settings
+      - FIREFLY_III_LAYOUT=v1
+      - DEFAULT_CURRENCY=USD
+      - ENABLE_EXTERNAL_MAP=false
+      - ENABLE_EXTERNAL_IMPORTER=false
+      - MAP_DEFAULT_LAT=51.983333
+      - MAP_DEFAULT_LONG=5.916667
+      - MAP_DEFAULT_ZOOM=6
+      
+      # Security
+      - COOKIE_PATH="/"
+      - COOKIE_DOMAIN=
+      - COOKIE_SECURE=false
+      - COOKIE_SAMESITE=lax
+      - DISABLE_FRAME_HEADER=false
+      - DISABLE_CSP_HEADER=false
+      
+      # Mail settings (using host network)
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=host.docker.internal
+      - MAIL_PORT=2500
+      - MAIL_FROM=noreply@firefly.local
+      
+      # Logging
+      - LOG_CHANNEL=stack
+      - LOG_LEVEL=debug
+      - APP_LOG_LEVEL=debug
+      
+      # Additional settings
+      - AUDIT_LOG_LEVEL=emergency
+      - BROADCAST_DRIVER=log
+      - CACHE_PREFIX=firefly
+      - PUSHER_KEY=
+      - PUSHER_SECRET=
+      - PUSHER_ID=
+      - PUSHER_CLUSTER=mt1
+      - PUSHER_ENCRYPTED=true
+      - DEMO_USERNAME=
+      - DEMO_PASSWORD=
+      - IS_HEROKU=false
+      - SEND_REGISTRATION_MAIL=true
+      - SEND_ERROR_MESSAGE=true
+      - SEND_LOGIN_NEW_IP_WARNING=true
+      - SEND_REPORT_JOURNALS=true
+      - ENABLE_PASSWORD_RESET=true
+      - ENABLE_USER_REGISTRATION=true
+    depends_on: []
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  firefly_iii_upload:
+    driver: local

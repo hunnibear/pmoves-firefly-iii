@@ -1,0 +1,401 @@
+{% extends "layout.default" %}
+
+{% block breadcrumbs %}
+{{ Breadcrumbs.render(Route.currentRouteName) }}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <!-- AI Status Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3 id="ai-status">Checking...</h3>
+                    <p>AI Service Status</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="small-box-footer">
+                    <button id="test-connectivity" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sync"></i> Test Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Insights Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3 id="insights-count">-</h3>
+                    <p>AI Insights Available</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="small-box-footer">
+                    <button id="get-insights" class="btn btn-success btn-sm">
+                        <i class="fas fa-brain"></i> Get Insights
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anomaly Detection Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3 id="anomalies-count">-</h3>
+                    <p>Spending Anomalies</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="small-box-footer">
+                    <button id="detect-anomalies" class="btn btn-warning btn-sm">
+                        <i class="fas fa-search"></i> Detect Anomalies
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Assistant Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="small-box bg-secondary">
+                <div class="inner">
+                    <h3><i class="fas fa-comments"></i></h3>
+                    <p>AI Financial Assistant</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="small-box-footer">
+                    <button id="open-chat" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-comment"></i> Start Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="row">
+        <!-- AI Insights Panel -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-brain"></i> AI Financial Insights
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="insights-container">
+                        <p class="text-muted">Click "Get Insights" to receive AI-powered financial analysis...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Tools Panel -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-tools"></i> AI Tools
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Transaction Categorization -->
+                    <div class="form-group">
+                        <label>Smart Transaction Categorization</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="transaction-description" placeholder="Enter transaction description">
+                            <input type="number" class="form-control" id="transaction-amount" placeholder="Amount" step="0.01">
+                        </div>
+                        <button id="categorize-transaction" class="btn btn-primary btn-sm mt-2">
+                            <i class="fas fa-tag"></i> Categorize
+                        </button>
+                        <div id="categorization-result" class="mt-2"></div>
+                    </div>
+
+                    <!-- Model Selection -->
+                    <div class="form-group">
+                        <label>AI Model</label>
+                        <select class="form-control" id="ai-model">
+                            <option value="llama">Llama 3.2 (Local)</option>
+                            <option value="openai">OpenAI GPT-4</option>
+                            <option value="groq">Groq Cloud</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Anomalies Detection Results -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card" id="anomalies-card" style="display: none;">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-exclamation-triangle"></i> Detected Spending Anomalies
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="anomalies-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div class="modal fade" id="chatModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-robot"></i> AI Financial Assistant
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="chat-container" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+                        <div class="chat-message assistant">
+                            <strong>AI Assistant:</strong> Hello! I'm your AI financial assistant. How can I help you manage your finances today?
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="chat-input" class="form-control" placeholder="Ask me anything about your finances...">
+                        <div class="input-group-append">
+                            <button id="send-chat" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ JS_NONCE }}">
+$(document).ready(function() {
+    // Test AI connectivity on page load
+    testConnectivity();
+
+    // Test connectivity button
+    $('#test-connectivity').click(function() {
+        testConnectivity();
+    });
+
+    // Get insights button
+    $('#get-insights').click(function() {
+        getInsights();
+    });
+
+    // Detect anomalies button
+    $('#detect-anomalies').click(function() {
+        detectAnomalies();
+    });
+
+    // Categorize transaction button
+    $('#categorize-transaction').click(function() {
+        categorizeTransaction();
+    });
+
+    // Open chat modal
+    $('#open-chat').click(function() {
+        $('#chatModal').modal('show');
+    });
+
+    // Send chat message
+    $('#send-chat').click(function() {
+        sendChatMessage();
+    });
+
+    // Enter key in chat input
+    $('#chat-input').keypress(function(e) {
+        if (e.which == 13) {
+            sendChatMessage();
+        }
+    });
+
+    function testConnectivity() {
+        $('#ai-status').html('<i class="fas fa-spinner fa-spin"></i> Testing...');
+        
+        $.ajax({
+            url: "{{ route('ai.test-connectivity') }}",
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#ai-status').html('<i class="fas fa-check"></i> Online').removeClass('text-danger').addClass('text-success');
+                } else {
+                    $('#ai-status').html('<i class="fas fa-times"></i> Offline').removeClass('text-success').addClass('text-danger');
+                }
+            },
+            error: function() {
+                $('#ai-status').html('<i class="fas fa-times"></i> Error').removeClass('text-success').addClass('text-danger');
+            }
+        });
+    }
+
+    function getInsights() {
+        $('#insights-count').html('<i class="fas fa-spinner fa-spin"></i>');
+        $('#insights-container').html('<p class="text-muted"><i class="fas fa-spinner fa-spin"></i> Generating AI insights...</p>');
+        
+        $.ajax({
+            url: "{{ route('ai.insights') }}",
+            method: 'GET',
+            success: function(response) {
+                if (response.success && response.insights) {
+                    $('#insights-count').text(response.insights.length);
+                    
+                    let html = '';
+                    response.insights.forEach(function(insight) {
+                        html += '<div class="alert alert-info"><i class="fas fa-lightbulb"></i> ' + insight + '</div>';
+                    });
+                    $('#insights-container').html(html);
+                } else {
+                    $('#insights-container').html('<p class="text-warning">No insights available at the moment.</p>');
+                }
+            },
+            error: function() {
+                $('#insights-container').html('<p class="text-danger">Error loading insights.</p>');
+            }
+        });
+    }
+
+    function detectAnomalies() {
+        $('#anomalies-count').html('<i class="fas fa-spinner fa-spin"></i>');
+        
+        $.ajax({
+            url: "{{ route('ai.detect-anomalies') }}",
+            method: 'GET',
+            success: function(response) {
+                if (response.success && response.anomalies && response.anomalies.length > 0) {
+                    $('#anomalies-count').text(response.anomalies.length);
+                    
+                    let html = '';
+                    response.anomalies.forEach(function(anomaly) {
+                        html += '<div class="alert alert-warning">';
+                        html += '<strong>' + anomaly.type + ':</strong> ' + anomaly.description;
+                        if (anomaly.amount) {
+                            html += ' (Amount: ' + anomaly.amount + ')';
+                        }
+                        html += '</div>';
+                    });
+                    
+                    $('#anomalies-container').html(html);
+                    $('#anomalies-card').show();
+                } else {
+                    $('#anomalies-count').text('0');
+                    $('#anomalies-card').hide();
+                }
+            },
+            error: function() {
+                $('#anomalies-count').text('Error');
+            }
+        });
+    }
+
+    function categorizeTransaction() {
+        const description = $('#transaction-description').val();
+        const amount = $('#transaction-amount').val();
+        
+        if (!description) {
+            alert('Please enter a transaction description');
+            return;
+        }
+        
+        $('#categorization-result').html('<i class="fas fa-spinner fa-spin"></i> Categorizing...');
+        
+        $.ajax({
+            url: "{{ route('ai.categorize-transaction') }}",
+            method: 'POST',
+            data: {
+                description: description,
+                amount: amount,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success && response.category) {
+                    $('#categorization-result').html('<div class="alert alert-success">Suggested Category: <strong>' + response.category + '</strong></div>');
+                } else {
+                    $('#categorization-result').html('<div class="alert alert-warning">Unable to categorize this transaction.</div>');
+                }
+            },
+            error: function() {
+                $('#categorization-result').html('<div class="alert alert-danger">Error categorizing transaction.</div>');
+            }
+        });
+    }
+
+    function sendChatMessage() {
+        const message = $('#chat-input').val().trim();
+        if (!message) return;
+        
+        // Add user message to chat
+        $('#chat-container').append('<div class="chat-message user mb-2"><strong>You:</strong> ' + message + '</div>');
+        $('#chat-input').val('');
+        
+        // Scroll to bottom
+        $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+        
+        // Show loading indicator
+        $('#chat-container').append('<div class="chat-message assistant mb-2" id="loading-message"><strong>AI Assistant:</strong> <i class="fas fa-spinner fa-spin"></i> Thinking...</div>');
+        $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+        
+        $.ajax({
+            url: "{{ route('ai.chat') }}",
+            method: 'POST',
+            data: {
+                message: message,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                $('#loading-message').remove();
+                
+                if (response.success && response.response) {
+                    $('#chat-container').append('<div class="chat-message assistant mb-2"><strong>AI Assistant:</strong> ' + response.response + '</div>');
+                } else {
+                    $('#chat-container').append('<div class="chat-message assistant mb-2 text-danger"><strong>AI Assistant:</strong> I apologize, but I encountered an error. Please try again.</div>');
+                }
+                
+                $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+            },
+            error: function() {
+                $('#loading-message').remove();
+                $('#chat-container').append('<div class="chat-message assistant mb-2 text-danger"><strong>AI Assistant:</strong> I apologize, but I\'m having trouble connecting. Please try again later.</div>');
+                $('#chat-container').scrollTop($('#chat-container')[0].scrollHeight);
+            }
+        });
+    }
+});
+</script>
+
+<style nonce="{{ JS_NONCE }}">
+.chat-message {
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.chat-message.user {
+    background-color: #e3f2fd;
+    text-align: right;
+}
+
+.chat-message.assistant {
+    background-color: #f5f5f5;
+}
+
+.small-box-footer .btn {
+    width: 100%;
+    border-radius: 0;
+}
+</style>
+{% endblock %}

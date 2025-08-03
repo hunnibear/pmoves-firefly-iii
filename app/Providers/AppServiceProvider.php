@@ -96,5 +96,10 @@ class AppServiceProvider extends ServiceProvider
         Passport::ignoreRoutes();
         //        Passport::ignoreMigrations();
         //        Sanctum::ignoreMigrations();
+        
+        // Register AI Service
+        $this->app->singleton(\FireflyIII\Services\Internal\AIService::class, function ($app) {
+            return new \FireflyIII\Services\Internal\AIService();
+        });
     }
 }

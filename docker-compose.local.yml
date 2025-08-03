@@ -1,0 +1,176 @@
+# Docker Compose for Local Development with Local Supabase
+
+networks:
+  firefly_iii:
+    driver: bridge
+  supabase_network:
+    external: true
+    name: supabase_network_pmoves-firefly-iii
+
+volumes:
+  firefly_iii_upload:
+  firefly_iii_db:
+  redis_data:
+
+services:
+  # Firefly III Application
+  app:
+    image: fireflyiii/core:latest
+    hostname: app
+    container_name: firefly_iii_core
+    restart: always
+    networks:
+      - firefly_iii
+      - supabase_network
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+      # Mount local code for development
+      - ./app:/var/www/html/app
+      - ./resources:/var/www/html/resources
+      - ./routes:/var/www/html/routes
+    env_file: .env.local
+    environment:
+      # Core Application Settings
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL}
+      - SITE_OWNER=${SITE_OWNER}
+      - DEFAULT_LANGUAGE=en_US
+      - DEFAULT_LOCALE=equal
+      - TZ=Europe/Amsterdam
+      - TRUSTED_PROXIES=**
+      
+      # Database Settings - Using .env.local file
+      # DB settings come from env_file: .env.local
+      
+      # Redis Settings
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_CACHE_DB=1
+      
+      # Queue Settings
+      - QUEUE_DRIVER=redis
+      - REDIS_SCHEME=tcp
+      
+      # AI Integration Settings
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - PERPLEXITYAI_API_KEY=${PERPLEXITYAI_API_KEY}
+      - TOGETHER_AI_API_KEY=${TOGETHER_AI_API_KEY}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+      - FIREWORKS_AI_API_KEY=${FIREWORKS_AI_API_KEY}
+      
+      # Local AI Services
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OPENAI_COMPATIBLE_BASE_URL=http://lm-studio:1234/v1
+      
+      # Supabase Integration
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      
+      # Security Settings
+      - DISABLE_FRAME_HEADER=false
+      - DISABLE_CSP_HEADER=false
+      - ALLOW_WEBHOOKS=true
+      
+      # Logging
+      - LOG_CHANNEL=stack
+      - APP_LOG_LEVEL=debug
+      - AUDIT_LOG_LEVEL=info
+      
+      # Mail Settings (for development)
+      - MAIL_MAILER=log
+      - MAIL_FROM=${SITE_OWNER}
+      
+    depends_on:
+      - redis
+    ports:
+      - "8080:8080"
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    container_name: firefly_iii_redis
+    restart: always
+    networks:
+      - firefly_iii
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Queue Worker for AI Processing
+  worker:
+    image: fireflyiii/core:latest
+    hostname: worker
+    container_name: firefly_iii_worker
+    restart: always
+    networks:
+      - firefly_iii
+      - supabase_network
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env.local
+    environment:
+      # Use same environment as main app
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=supabase-db
+      - DB_PORT=5432
+      - DB_DATABASE=postgres
+      - DB_USERNAME=supabase_admin
+      - DB_PASSWORD=your-super-secret-and-long-postgres-password
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QUEUE_DRIVER=redis
+      
+      # AI API Keys
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      
+    depends_on:
+      - redis
+      - app
+    command: php artisan queue:work --queue=ai-processing,default --tries=3 --timeout=300
+
+  # Scheduler for periodic tasks
+  cron:
+    image: fireflyiii/core:latest
+    hostname: cron
+    container_name: firefly_iii_cron
+    restart: always
+    networks:
+      - firefly_iii
+      - supabase_network
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env.local
+    environment:
+      - APP_ENV=local
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=supabase-db
+      - DB_PORT=5432
+      - DB_DATABASE=postgres
+      - DB_USERNAME=supabase_admin
+      - DB_PASSWORD=your-super-secret-and-long-postgres-password
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - STATIC_CRON_TOKEN=${STATIC_CRON_TOKEN}
+    depends_on:
+      - app
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"

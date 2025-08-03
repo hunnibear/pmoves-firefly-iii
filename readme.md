@@ -123,6 +123,27 @@ There are many ways to run Firefly III
 8. You can [install it on Lando](https://gist.github.com/ArtisKrumins/ccb24f31d6d4872b57e7c9343a9d1bf0).
 9. You can [install it on Yunohost](https://github.com/YunoHost-Apps/firefly-iii).
 
+## 🤖 AI Integration
+
+Firefly III now includes advanced AI capabilities to enhance your financial management experience:
+
+- **🧠 Smart Transaction Categorization**: AI-powered automatic categorization using local and cloud models
+- **💡 Financial Insights**: Personalized spending analysis and budget recommendations
+- **🔍 Anomaly Detection**: Identify unusual spending patterns and potential duplicates
+- **💬 AI Chat Assistant**: Interactive financial advisor for real-time advice
+- **🏠 Local AI Support**: Privacy-focused processing with Ollama and Llama models
+- **☁️ Cloud AI Integration**: OpenAI GPT-4 and Groq for advanced reasoning
+
+### Getting Started with AI Features
+
+1. **Access the AI Dashboard**: Navigate to `/ai` or click "AI Assistant" in the sidebar
+2. **Test Connectivity**: Verify your AI models are running and accessible
+3. **Try Transaction Categorization**: Input transaction details for smart categorization
+4. **Explore Insights**: Generate personalized financial recommendations
+5. **Chat with AI**: Ask questions about your spending patterns and get advice
+
+For detailed setup and usage instructions, see [README-AI.md](README-AI.md).
+
 ## Contributing
 
 You can contact me at [james@firefly-iii.org](mailto:james@firefly-iii.org), you may open an issue in the [main repository](https://github.com/firefly-iii/firefly-iii) or contact me through [gitter](https://gitter.im/firefly-iii/firefly-iii) and [Mastodon](https://fosstodon.org/@ff3).

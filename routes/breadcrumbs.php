@@ -894,6 +894,15 @@ Breadcrumbs::for(
     }
 );
 
+// AI DASHBOARD
+Breadcrumbs::for(
+    'ai.index',
+    static function (Generator $breadcrumbs): void {
+        $breadcrumbs->parent('home');
+        $breadcrumbs->push(trans('breadcrumbs.ai_dashboard'), route('ai.index'));
+    }
+);
+
 // New user Controller
 Breadcrumbs::for(
     'new-user.index',

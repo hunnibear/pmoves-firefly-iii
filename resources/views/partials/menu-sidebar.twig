@@ -186,6 +186,13 @@
         </a>
     </li>
 
+    <li class="{{ activeRoutePartial('ai') }}" id="ai-menu">
+        <a href="{{ route('ai.index') }}">
+            <em class="fa fa-robot fa-fw"></em>
+            <span>🤖 AI Assistant</span>
+        </a>
+    </li>
+
 
     {% if config('firefly.feature_flags.export') %}
         <li class="{{ activeRoutePartial('export') }}" id="report-menu">

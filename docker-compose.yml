@@ -1,0 +1,134 @@
+version: '3.9'
+
+services:
+  # Firefly III Core Application
+  firefly-app:
+    image: fireflyiii/core:latest
+    container_name: firefly_iii_app
+    restart: unless-stopped
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+      - firefly_iii_logs:/var/www/html/storage/logs
+    env_file:
+      - .env.local  # Change to .env.production for production
+    ports:
+      - "${FIREFLY_PORT:-8080}:8080"
+    depends_on:
+      - redis
+    networks:
+      - firefly-network
+      - supabase_network
+    labels:
+      - "com.docker.compose.project=firefly-iii-pmoves"
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: firefly_iii_redis
+    restart: unless-stopped
+    volumes:
+      - firefly_iii_redis:/data
+    networks:
+      - firefly-network
+    command: redis-server --appendonly yes
+
+  # Queue Worker for background jobs
+  firefly-queue:
+    image: fireflyiii/core:latest
+    container_name: firefly_iii_queue
+    restart: unless-stopped
+    command: >
+      sh -c "php artisan config:cache && 
+             php artisan route:cache && 
+             php artisan queue:work redis --queue=ai-processing,default --tries=3 --timeout=300"
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+      - firefly_iii_logs:/var/www/html/storage/logs
+    env_file:
+      - .env.local  # Change to .env.production for production
+    depends_on:
+      - redis
+    networks:
+      - firefly-network
+      - supabase_network
+
+  # Cron scheduler
+  firefly-cron:
+    image: fireflyiii/core:latest
+    container_name: firefly_iii_cron
+    restart: unless-stopped
+    command: >
+      sh -c "while true; do
+        php artisan schedule:run >> /var/log/cron.log 2>&1
+        sleep 60
+      done"
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+      - firefly_iii_logs:/var/www/html/storage/logs
+    env_file:
+      - .env.local  # Change to .env.production for production
+    depends_on:
+      - redis
+    networks:
+      - firefly-network
+
+  # Ollama for local AI (development only)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: firefly_iii_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - firefly-network
+    profiles:
+      - local  # Only run in local development
+
+  # Hugging Face Text Generation Inference (optional)
+  text-generation-inference:
+    image: ghcr.io/huggingface/text-generation-inference:latest
+    container_name: firefly_iii_tgi
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      - MODEL_ID=microsoft/DialoGPT-medium
+      - MAX_INPUT_TOKENS=2048
+      - MAX_TOTAL_TOKENS=4096
+    volumes:
+      - tgi_data:/data
+    networks:
+      - firefly-network
+    profiles:
+      - local  # Only run in local development
+    # Uncomment if you have NVIDIA GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  firefly_iii_upload:
+    name: firefly_iii_upload
+  firefly_iii_logs:
+    name: firefly_iii_logs
+  firefly_iii_redis:
+    name: firefly_iii_redis
+  ollama_data:
+    name: firefly_iii_ollama_data
+  tgi_data:
+    name: firefly_iii_tgi_data
+
+networks:
+  firefly-network:
+    name: firefly_iii_network
+    driver: bridge
+  supabase_network:
+    external: true

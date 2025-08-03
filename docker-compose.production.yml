@@ -1,0 +1,227 @@
+# Docker Compose for Production with VPS Supabase
+version: '3.8'
+
+networks:
+  firefly_iii:
+    driver: bridge
+
+volumes:
+  firefly_iii_upload:
+  redis_data:
+
+services:
+  # Firefly III Application
+  app:
+    image: fireflyiii/core:latest
+    hostname: app
+    container_name: firefly_iii_core_prod
+    restart: always
+    networks:
+      - firefly_iii
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env.production
+    environment:
+      # Core Application Settings
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL}
+      - SITE_OWNER=${SITE_OWNER}
+      - DEFAULT_LANGUAGE=en_US
+      - DEFAULT_LOCALE=equal
+      - TZ=Europe/Amsterdam
+      - TRUSTED_PROXIES=**
+      
+      # Database Settings (Remote Supabase)
+      - DB_CONNECTION=pgsql
+      - DB_HOST=${POSTGRES_HOSTNAME}
+      - DB_PORT=${POSTGRES_PORT}
+      - DB_DATABASE=${POSTGRES_DB}
+      - DB_USERNAME=${SERVICE_USER_ADMIN}
+      - DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - PGSQL_SCHEMA=${PGRST_DB_SCHEMAS}
+      
+      # SSL Settings for Production
+      - PGSQL_SSL_MODE=require
+      - PGSQL_SSL_ROOT_CERT=null
+      
+      # Redis Settings
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_CACHE_DB=1
+      
+      # Queue Settings
+      - QUEUE_DRIVER=redis
+      - REDIS_SCHEME=tcp
+      
+      # AI Integration Settings
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - PERPLEXITYAI_API_KEY=${PERPLEXITYAI_API_KEY}
+      - TOGETHER_AI_API_KEY=${TOGETHER_AI_API_KEY}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+      - FIREWORKS_AI_API_KEY=${FIREWORKS_AI_API_KEY}
+      
+      # Remote AI Services
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      - OPENAI_COMPATIBLE_BASE_URL=${OPENAI_COMPATIBLE_BASE_URL}
+      
+      # Supabase Integration (VPS)
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      
+      # Security Settings
+      - DISABLE_FRAME_HEADER=false
+      - DISABLE_CSP_HEADER=false
+      - ALLOW_WEBHOOKS=true
+      - COOKIE_SECURE=true
+      - COOKIE_SAMESITE=strict
+      
+      # Logging
+      - LOG_CHANNEL=stack
+      - APP_LOG_LEVEL=warning
+      - AUDIT_LOG_LEVEL=info
+      
+      # Mail Settings
+      - MAIL_MAILER=${MAIL_MAILER}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_FROM=${SITE_OWNER}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
+      
+      # Static Cron Token
+      - STATIC_CRON_TOKEN=${STATIC_CRON_TOKEN}
+      
+    depends_on:
+      - redis
+    ports:
+      - "80:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    container_name: firefly_iii_redis_prod
+    restart: always
+    networks:
+      - firefly_iii
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Queue Worker for AI Processing (Production)
+  worker:
+    image: fireflyiii/core:latest
+    hostname: worker
+    container_name: firefly_iii_worker_prod
+    restart: always
+    networks:
+      - firefly_iii
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env.production
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=${APP_KEY}
+      
+      # Database Settings
+      - DB_CONNECTION=pgsql
+      - DB_HOST=${POSTGRES_HOSTNAME}
+      - DB_PORT=${POSTGRES_PORT}
+      - DB_DATABASE=${POSTGRES_DB}
+      - DB_USERNAME=${SERVICE_USER_ADMIN}
+      - DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - PGSQL_SSL_MODE=require
+      
+      # Cache Settings
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - QUEUE_DRIVER=redis
+      
+      # AI API Keys
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+      
+    depends_on:
+      - redis
+      - app
+    deploy:
+      replicas: 2
+    command: php artisan queue:work --queue=ai-processing,default --tries=3 --timeout=600 --memory=512
+
+  # Scheduler for periodic tasks
+  cron:
+    image: fireflyiii/core:latest
+    hostname: cron
+    container_name: firefly_iii_cron_prod
+    restart: always
+    networks:
+      - firefly_iii
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env.production
+    environment:
+      - APP_ENV=production
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=${POSTGRES_HOSTNAME}
+      - DB_PORT=${POSTGRES_PORT}
+      - DB_DATABASE=${POSTGRES_DB}
+      - DB_USERNAME=${SERVICE_USER_ADMIN}
+      - DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - STATIC_CRON_TOKEN=${STATIC_CRON_TOKEN}
+    depends_on:
+      - app
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    hostname: nginx
+    container_name: firefly_iii_nginx_prod
+    restart: always
+    networks:
+      - firefly_iii
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

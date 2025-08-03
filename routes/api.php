@@ -997,3 +997,32 @@ Route::group(
         );
     }
 );
+
+// AI Integration API routes (temporarily disabled):
+/*
+Route::group(
+    [
+        'namespace' => 'App\Http\Controllers\Api\V1',
+        'prefix'    => 'v1/ai',
+        'as'        => 'api.v1.ai.',
+        'middleware' => ['auth:api', 'bindings'],
+    ],
+    static function (): void {
+        // Transaction categorization
+        Route::post('categorize-transaction', ['uses' => 'AIController@categorizeTransaction', 'as' => 'categorize-transaction']);
+        
+        // Financial insights
+        Route::get('insights', ['uses' => 'AIController@generateInsights', 'as' => 'insights']);
+        
+        // AI chat assistant
+        Route::post('chat', ['uses' => 'AIController@chat', 'as' => 'chat']);
+        
+        // Anomaly detection
+        Route::get('anomalies', ['uses' => 'AIController@detectAnomalies', 'as' => 'anomalies']);
+        
+        // Service status and testing
+        Route::get('status', ['uses' => 'AIController@getStatus', 'as' => 'status']);
+        Route::get('test-connectivity', ['uses' => 'AIController@testConnectivity', 'as' => 'test-connectivity']);
+    }
+);
+*/

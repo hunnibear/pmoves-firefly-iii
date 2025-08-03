@@ -1437,3 +1437,21 @@ Route::group(
         //        Route::post('set-order/{bill}', ['uses' => 'Bill\IndexController@setOrder', 'as' => 'set-order']);
     }
 );
+
+// AI Dashboard Routes
+Route::group(
+    [
+        'middleware' => ['user-full-auth'],
+        'namespace'  => 'FireflyIII\Http\Controllers\AI',
+        'prefix'     => 'ai',
+        'as'         => 'ai.',
+    ],
+    static function (): void {
+        Route::get('/', ['uses' => 'DashboardController@index', 'as' => 'index']);
+        Route::get('test-connectivity', ['uses' => 'DashboardController@testConnectivity', 'as' => 'test-connectivity']);
+        Route::get('insights', ['uses' => 'DashboardController@getInsights', 'as' => 'insights']);
+        Route::post('chat', ['uses' => 'DashboardController@chat', 'as' => 'chat']);
+        Route::post('categorize-transaction', ['uses' => 'DashboardController@categorizeTransaction', 'as' => 'categorize-transaction']);
+        Route::get('detect-anomalies', ['uses' => 'DashboardController@detectAnomalies', 'as' => 'detect-anomalies']);
+    }
+);
