@@ -8,7 +8,13 @@ yarn-error.log
 /.ci/php-cs-fixer/vendor
 coverage.xml
 output.txt
-
+fireflysetup.md
+setup-ai-dashboard.ps1
+setup-with-existing-supabase.ps1
+.env.local.example
+.env.production.example
+.env.production
+.env.firefly
 # ignore generated files.
 public/build
 
@@ -28,3 +34,6 @@ public/v1/js/webhooks
 resources/assets/v2/node_modules
 resources/assets/v2/build
 public/v2/i18n
+
+# Sensitive Files
+
