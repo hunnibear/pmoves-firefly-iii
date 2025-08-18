@@ -124,13 +124,6 @@ services:
       # Use same environment as main app
       - APP_ENV=local
       - APP_DEBUG=true
-      - APP_KEY=${APP_KEY}
-      - DB_CONNECTION=pgsql
-      - DB_HOST=supabase-db
-      - DB_PORT=5432
-      - DB_DATABASE=postgres
-      - DB_USERNAME=supabase_admin
-      - DB_PASSWORD=your-super-secret-and-long-postgres-password
       - CACHE_DRIVER=redis
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -161,13 +154,6 @@ services:
     env_file: .env.local
     environment:
       - APP_ENV=local
-      - APP_KEY=${APP_KEY}
-      - DB_CONNECTION=pgsql
-      - DB_HOST=supabase-db
-      - DB_PORT=5432
-      - DB_DATABASE=postgres
-      - DB_USERNAME=supabase_admin
-      - DB_PASSWORD=your-super-secret-and-long-postgres-password
       - CACHE_DRIVER=redis
       - REDIS_HOST=redis
       - STATIC_CRON_TOKEN=${STATIC_CRON_TOKEN}
