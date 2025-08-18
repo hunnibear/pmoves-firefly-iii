@@ -13,6 +13,7 @@ namespace FireflyIII\Http\Controllers\AI;
 
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Services\Internal\AIService;
+use FireflyIII\Repositories\TransactionJournal\TransactionJournalRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
@@ -23,11 +24,13 @@ use Illuminate\Http\JsonResponse;
 class DashboardController extends Controller
 {
     private AIService $aiService;
+    private TransactionJournalRepositoryInterface $transactionJournalRepository;
 
-    public function __construct(AIService $aiService)
+    public function __construct(AIService $aiService, TransactionJournalRepositoryInterface $transactionJournalRepository)
     {
         parent::__construct();
         $this->aiService = $aiService;
+        $this->transactionJournalRepository = $transactionJournalRepository;
         
         $this->middleware(function ($request, $next) {
             app('view')->share('title', 'AI Dashboard');
@@ -70,13 +73,29 @@ class DashboardController extends Controller
     {
         try {
             $userId = auth()->id();
-            
-            // For now, return sample insights until we implement transaction fetching
-            $insights = [
-                "Your spending this month is 15% higher than last month.",
-                "Consider setting up a budget for the 'Dining Out' category.",
-                "You've saved $250 more than your target this month - great job!"
-            ];
+            $accounts = auth()->user()->accounts()->get();
+
+            $journals = $this->transactionJournalRepository->getJournals(
+                $accounts, 
+                [], 
+                [], 
+                [], 
+                null, 
+                null, 
+                null, 
+                null, 
+                100
+            );
+
+            $transactions = $journals->map(function ($journal) {
+                return [
+                    'description' => $journal->description,
+                    'amount' => $journal->transactions->first()->amount,
+                    'category' => $journal->category->name ?? null,
+                ];
+            })->all();
+
+            $insights = $this->aiService->generateInsights($transactions, $userId);
             
             return response()->json([
                 'success' => true,
@@ -105,7 +124,7 @@ class DashboardController extends Controller
                 // Add more financial context as needed
             ];
             
-            $response = $this->aiService->chat($message, $context);
+            $response = $this->aiService->chat($message, (array) $context);
             
             return response()->json([
                 'success' => true,
@@ -175,19 +194,29 @@ class DashboardController extends Controller
     public function detectAnomalies(): JsonResponse
     {
         try {
-            // For now, return sample anomalies until we implement transaction analysis
-            $anomalies = [
-                [
-                    'type' => 'Unusual Spending',
-                    'description' => 'Shopping expenses were 40% higher than usual this week',
-                    'amount' => '$234.50'
-                ],
-                [
-                    'type' => 'Duplicate Transaction',
-                    'description' => 'Possible duplicate charge at Coffee Shop on Main St',
-                    'amount' => '$4.25'
-                ]
-            ];
+            $accounts = auth()->user()->accounts()->get();
+
+            $journals = $this->transactionJournalRepository->getJournals(
+                $accounts, 
+                [], 
+                [], 
+                [], 
+                null, 
+                null, 
+                null, 
+                null, 
+                1000
+            );
+
+            $transactions = $journals->map(function ($journal) {
+                return [
+                    'description' => $journal->description,
+                    'amount' => $journal->transactions->first()->amount,
+                    'category' => $journal->category->name ?? null,
+                ];
+            })->all();
+
+            $anomalies = $this->aiService->detectAnomalies($transactions);
             
             return response()->json([
                 'success' => true,

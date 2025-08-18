@@ -23,8 +23,12 @@ class AIService
         $this->httpClient = new Client(['timeout' => 30]);
         $this->config = [
             'ollama_url' => env('OLLAMA_URL', 'http://localhost:11434'),
+            'ollama_model' => env('OLLAMA_MODEL', 'llama3.2:latest'),
             'openai_key' => env('OPENAI_API_KEY'),
             'groq_key' => env('GROQ_API_KEY'),
+            'lmstudio_url' => env('LMSTUDIO_BASE_URL'),
+            'lmstudio_model' => env('LMSTUDIO_MODEL'),
+            'lmstudio_enabled' => env('LMSTUDIO_ENABLED', false),
             'default_provider' => env('AI_DEFAULT_PROVIDER', 'ollama'),
         ];
     }
@@ -96,6 +100,8 @@ class AIService
      */
     public function chat(string $message, array $context = []): string
     {
+        Log::info('AI chat request received', ['message' => $message, 'context_type' => gettype($context), 'context' => $context]);
+
         $systemPrompt = "You are a helpful financial advisor assistant for Firefly III. " .
                        "You help users understand their spending, budgeting, and financial planning. " .
                        "Be concise but helpful. Reference their actual data when relevant.";
@@ -106,7 +112,8 @@ class AIService
 
         try {
             return $this->callAI($fullPrompt, 'chat');
-        } catch (\Exception $e) {
+        } catch (
+Exception $e) {
             Log::error('AI chat failed', ['error' => $e->getMessage()]);
             return "I'm sorry, I'm having trouble connecting to the AI service right now. Please try again later.";
         }
@@ -158,7 +165,7 @@ class AIService
      */
     private function callAI(string $prompt, string $type = 'general'): string
     {
-        $providers = ['ollama', 'groq', 'openai'];
+        $providers = ['ollama', 'lmstudio', 'groq', 'openai'];
         $errors = [];
 
         foreach ($providers as $provider) {
@@ -166,6 +173,8 @@ class AIService
                 switch ($provider) {
                     case 'ollama':
                         return $this->callOllama($prompt);
+                    case 'lmstudio':
+                        return $this->callLMStudio($prompt);
                     case 'groq':
                         return $this->callGroq($prompt);
                     case 'openai':
@@ -186,10 +195,12 @@ class AIService
      */
     private function callOllama(string $prompt): string
     {
-        $response = $this->httpClient->post($this->config['ollama_url'] . '/api/generate', [
+        $response = $this->httpClient->post($this->config['ollama_url'] . '/api/chat', [
             'json' => [
-                'model' => 'llama3.2:1b',
-                'prompt' => $prompt,
+                'model' => $this->config['ollama_model'],
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt]
+                ],
                 'stream' => false,
                 'options' => [
                     'temperature' => 0.7,
@@ -202,7 +213,7 @@ class AIService
         ]);
 
         $data = json_decode($response->getBody()->getContents(), true);
-        return $data['response'] ?? 'No response from AI';
+        return $data['message']['content'] ?? 'No response from AI';
     }
 
     /**
@@ -253,6 +264,33 @@ class AIService
             ],
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->config['openai_key'],
+                'Content-Type' => 'application/json'
+            ]
+        ]);
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $data['choices'][0]['message']['content'] ?? 'No response from AI';
+    }
+
+    /**
+     * Call LM Studio API
+     */
+    private function callLMStudio(string $prompt): string
+    {
+        if (!$this->config['lmstudio_enabled'] || empty($this->config['lmstudio_url'])) {
+            throw new \Exception('LM Studio not enabled or configured');
+        }
+
+        $response = $this->httpClient->post($this->config['lmstudio_url'] . '/v1/chat/completions', [
+            'json' => [
+                'model' => $this->config['lmstudio_model'],
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt]
+                ],
+                'max_tokens' => 500,
+                'temperature' => 0.7
+            ],
+            'headers' => [
                 'Content-Type' => 'application/json'
             ]
         ]);
@@ -318,6 +356,7 @@ class AIService
     {
         $results = [
             'ollama' => false,
+            'lmstudio' => false,
             'groq' => false,
             'openai' => false
         ];
@@ -328,6 +367,16 @@ class AIService
             $results['ollama'] = true;
         } catch (\Exception $e) {
             // Ollama not available
+        }
+
+        // Test LM Studio
+        if ($this->config['lmstudio_enabled'] && !empty($this->config['lmstudio_url'])) {
+            try {
+                $this->httpClient->get($this->config['lmstudio_url'] . '/v1/models', ['timeout' => 5]);
+                $results['lmstudio'] = true;
+            } catch (\Exception $e) {
+                // LM Studio not available
+            }
         }
 
         // Test Groq
@@ -349,6 +398,8 @@ class AIService
                 // OpenAI not available
             }
         }
+
+        Log::info('AI Connectivity Test Results', $results);
 
         return $results;
     }

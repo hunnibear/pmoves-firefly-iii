@@ -1462,5 +1462,6 @@ Route::group(
         Route::post('chat', ['uses' => 'DashboardController@chat', 'as' => 'chat']);
         Route::post('categorize-transaction', ['uses' => 'DashboardController@categorizeTransaction', 'as' => 'categorize-transaction']);
         Route::get('detect-anomalies', ['uses' => 'DashboardController@detectAnomalies', 'as' => 'detect-anomalies']);
+        Route::get('test-log', function() { app(FireflyIII\Services\Internal\AIService::class)->testConnectivity(); return 'Logged!'; });
     }
 );
