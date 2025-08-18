@@ -99,19 +99,14 @@ class UpdateController extends Controller
     }
 
     /**
-     * This endpoint is documented at:
-     * https://api-docs.firefly-iii.org/?urls.primaryName=2.0.0%20(v1)#/currencies/nativeCurrency
-     *
-     * Make the currency a default currency.
-     *
      * @throws FireflyException
      */
-    public function makeDefault(TransactionCurrency $currency): JsonResponse
+    public function makePrimary(TransactionCurrency $currency): JsonResponse
     {
         /** @var User $user */
         $user        = auth()->user();
         $this->repository->enable($currency);
-        $this->repository->makeDefault($currency);
+        $this->repository->makePrimary($currency);
 
         app('preferences')->mark();
 

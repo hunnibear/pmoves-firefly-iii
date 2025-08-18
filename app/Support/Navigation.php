@@ -464,7 +464,7 @@ class Navigation
         $displayFormat = (string) trans('config.month_and_day_js', [], $locale);
         $diff          = $start->diffInMonths($end, true);
         // increment by month (for year)
-        if ($diff >= 1.0001) {
+        if ($diff >= 1.0001 && $diff < 12.001) {
             $increment     = 'addMonth';
             $displayFormat = (string) trans('config.month_js');
         }
@@ -495,7 +495,7 @@ class Navigation
         $format = 'Y-m-d';
         $diff   = $start->diffInMonths($end, true);
         // Log::debug(sprintf('preferredCarbonFormat(%s, %s) = %f', $start->format('Y-m-d'), $end->format('Y-m-d'), $diff));
-        if ($diff >= 1.001) {
+        if ($diff >= 1.001 && $diff < 12.001) {
             //            Log::debug(sprintf('Return Y-m because %s', $diff));
             $format = 'Y-m';
         }
@@ -565,11 +565,12 @@ class Navigation
     public function preferredCarbonLocalizedFormat(Carbon $start, Carbon $end): string
     {
         $locale = app('steam')->getLocale();
-        if ($start->diffInMonths($end, true) > 1) {
+        $diff   = $start->diffInMonths($end, true);
+        if ($diff >= 1.001 && $diff < 12.001) {
             return (string) trans('config.month_js', [], $locale);
         }
 
-        if ($start->diffInMonths($end, true) > 12) {
+        if ($diff >= 12.001) {
             return (string) trans('config.year_js', [], $locale);
         }
 
@@ -582,11 +583,12 @@ class Navigation
      */
     public function preferredEndOfPeriod(Carbon $start, Carbon $end): string
     {
-        if ((int) $start->diffInMonths($end, true) > 1 && (int) $start->diffInMonths($end, true) <= 12) {
+        $diff = $start->diffInMonths($end, true);
+        if ($diff >= 1.001 && $diff < 12.001) {
             return 'endOfMonth';
         }
 
-        if ((int) $start->diffInMonths($end, true) > 12) {
+        if ($diff >= 12.001) {
             return 'endOfYear';
         }
 
@@ -599,11 +601,12 @@ class Navigation
      */
     public function preferredRangeFormat(Carbon $start, Carbon $end): string
     {
-        if ((int) $start->diffInMonths($end, true) > 1 && (int) $start->diffInMonths($end, true) <= 12) {
+        $diff = $start->diffInMonths($end, true);
+        if ($diff >= 1.001 && $diff < 12.001) {
             return '1M';
         }
 
-        if ((int) $start->diffInMonths($end, true) > 12) {
+        if ($diff >= 12.001) {
             return '1Y';
         }
 
@@ -616,11 +619,12 @@ class Navigation
      */
     public function preferredSqlFormat(Carbon $start, Carbon $end): string
     {
-        if ((int) $start->diffInMonths($end, true) > 1 && (int) $start->diffInMonths($end, true) <= 12) {
+        $diff = $start->diffInMonths($end, true);
+        if ($diff >= 1.001 && $diff < 12.001) {
             return '%Y-%m';
         }
 
-        if ((int) $start->diffInMonths($end, true) > 12) {
+        if ($diff >= 12.001) {
             return '%Y';
         }
 

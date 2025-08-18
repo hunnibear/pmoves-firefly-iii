@@ -107,7 +107,7 @@ class ShowController extends Controller
         /** @var User $user */
         $user        = auth()->user();
         $manager     = $this->getManager();
-        $this->parameters->set('nativeCurrency', $this->nativeCurrency);
+        $this->parameters->set('primaryCurrency', $this->primaryCurrency);
 
         // update fields with user info.
         $currency->refreshForUser($user);
@@ -122,19 +122,16 @@ class ShowController extends Controller
     }
 
     /**
-     * This endpoint is documented at:
-     * https://api-docs.firefly-iii.org/?urls.primaryName=2.0.0%20(v1)#/currencies/getNativeCurrency
-     *
      * Show a currency.
      *
      * @throws FireflyException
      */
-    public function showDefault(): JsonResponse
+    public function showPrimary(): JsonResponse
     {
         /** @var User $user */
         $user        = auth()->user();
         $manager     = $this->getManager();
-        $currency    = $this->nativeCurrency;
+        $currency    = $this->primaryCurrency;
 
         // update fields with user info.
         $currency->refreshForUser($user);

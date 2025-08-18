@@ -120,6 +120,7 @@ Route::group(
         Route::get('flush', ['uses' => 'DebugController@flush', 'as' => 'flush']);
         Route::get('routes', ['uses' => 'DebugController@routes', 'as' => 'routes']);
         Route::get('debug', 'DebugController@index')->name('debug');
+        Route::get('debug/api-test', 'DebugController@apiTest')->name('api-test');
     }
 );
 
@@ -142,6 +143,14 @@ Route::group(
         Route::get('/flash', ['uses' => 'DebugController@testFlash', 'as' => 'test-flash']);
         Route::get('/home', ['uses' => 'HomeController@index', 'as' => 'home']);
         Route::post('/daterange', ['uses' => 'HomeController@dateRange', 'as' => 'daterange']);
+    }
+);
+
+// Couples Budget Planner Controller.
+Route::group(
+    ['middleware' => ['user-full-auth'], 'namespace' => 'FireflyIII\Http\Controllers', 'prefix' => 'couples', 'as' => 'couples.'],
+    static function (): void {
+        Route::get('/', ['uses' => 'CouplesController@index', 'as' => 'index']);
     }
 );
 

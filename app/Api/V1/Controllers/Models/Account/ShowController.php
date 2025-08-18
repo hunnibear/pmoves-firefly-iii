@@ -67,9 +67,6 @@ class ShowController extends Controller
     }
 
     /**
-     * This endpoint is documented at:
-     * https://api-docs.firefly-iii.org/?urls.primaryName=2.0.0%20(v1)#/accounts/listAccount
-     *
      * Display a listing of the resource.
      *
      * @throws FireflyException
@@ -96,8 +93,8 @@ class ShowController extends Controller
         /** @var User $admin */
         $admin       = auth()->user();
         $enrichment  = new AccountEnrichment();
+        $enrichment->setDate($this->parameters->get('date'));
         $enrichment->setUser($admin);
-        $enrichment->setNative($this->nativeCurrency);
         $accounts    = $enrichment->enrich($accounts);
 
         // make paginator:
@@ -131,8 +128,8 @@ class ShowController extends Controller
         /** @var User $admin */
         $admin       = auth()->user();
         $enrichment  = new AccountEnrichment();
+        $enrichment->setDate($this->parameters->get('date'));
         $enrichment->setUser($admin);
-        $enrichment->setNative($this->nativeCurrency);
         $account     = $enrichment->enrichSingle($account);
 
 
