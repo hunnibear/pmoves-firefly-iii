@@ -37,3 +37,56 @@ public/v2/i18n
 
 # Sensitive Files
 
+
+# === SECURITY & SENSITIVE FILES ===
+# Environment files with secrets
+.env*
+!.env.example
+!.env.sample
+!.env.template
+
+# API Keys and secrets
+*api-key*
+*secret*
+*token*
+*password*
+*key.txt
+*keys.txt
+
+# Configuration files that might contain secrets
+config/secrets.php
+config/keys.php
+fireflysetup.md
+setup-ai-dashboard.ps1
+setup-with-existing-supabase.ps1
+firefly-ai-dashboard.html
+
+# AI/ML related files with potential API keys
+*openai*
+*groq*
+*anthropic*
+*gemini*
+*claude*
+ai-config.*
+llm-config.*
+
+# Backup files that might contain sensitive data
+*.backup
+*.bak
+*-backup.*
+backup-*
+
+# Local development files
+.vscode/settings.json
+.idea/
+*.local
+local.*
+dev.*
+development.*
+
+# Temporary files that might contain sensitive data
+temp-*
+tmp-*
+*.tmp
+*.temp
+sensitive-files.txt
