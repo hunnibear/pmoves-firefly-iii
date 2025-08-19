@@ -1,0 +1,11 @@
+Date,Description,Amount,Note,Account,Opposing Account
+2025-08-18,Weekly grocery shopping,-85.50,Person 1 did the shopping,Checking Account,Cash Expenses
+2025-08-18,Morning coffee and pastry,-12.50,Person 2 coffee run,Checking Account,Cash Expenses  
+2025-08-18,Monthly rent payment,-1250.00,Shared housing expense,Checking Account,Cash Expenses
+2025-08-18,Electricity bill,-135.50,Utility bill for the month,Checking Account,Cash Expenses
+2025-08-18,Date night dinner,-89.25,Anniversary dinner,Checking Account,Cash Expenses
+2025-08-19,Person 1 salary deposit,3500.00,Monthly salary,Checking Account,Salary
+2025-08-19,Person 2 freelance payment,750.00,Freelance project payment,Checking Account,Salary
+2025-08-19,Gas station fill-up,-45.00,Person 1 filled up the car,Checking Account,Cash Expenses
+2025-08-19,Online shopping delivery,-67.99,Person 2 Amazon order,Checking Account,Cash Expenses
+2025-08-19,Pharmacy pickup,-34.50,Prescription medications,Checking Account,Cash Expenses

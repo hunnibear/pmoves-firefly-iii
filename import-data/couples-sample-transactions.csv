@@ -1,0 +1,11 @@
+Date,Description,Amount,Note,Account,Category
+2025-08-15,Weekly grocery shopping,-85.50,Person 1 did the shopping,Joint Checking,Person 1 Expense
+2025-08-15,Morning coffee and pastry,-12.50,Person 2 coffee run,Joint Checking,Person 2 Expense
+2025-08-15,Monthly rent payment,-1250.00,Shared housing expense,Joint Checking,Shared Expense
+2025-08-15,Electricity bill,-135.50,Utility bill for the month,Joint Checking,Shared Expense
+2025-08-15,Date night dinner,-89.25,Anniversary dinner,Joint Checking,Shared Expense
+2025-08-16,Person 1 salary deposit,3500.00,Monthly salary,Joint Checking,Person 1 Income
+2025-08-16,Person 2 freelance payment,750.00,Freelance project payment,Joint Checking,Person 2 Income
+2025-08-16,Gas station fill-up,-45.00,Person 1 filled up the car,Joint Checking,Person 1 Expense
+2025-08-16,Online shopping delivery,-67.99,Person 2 Amazon order,Joint Checking,Person 2 Expense
+2025-08-17,Pharmacy pickup,-34.50,Prescription medications,Joint Checking,Shared Expense

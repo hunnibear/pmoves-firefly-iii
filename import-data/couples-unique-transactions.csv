@@ -1,0 +1,11 @@
+Date,Description,Amount,Note,Account,Opposing Account
+2025-08-18,Weekly grocery shopping - CSV Import Test,-85.50,Person 1 grocery run,Checking Account,Cash Expenses
+2025-08-18,Morning coffee and pastry - CSV Test,-12.50,Person 2 coffee run,Checking Account,Cash Expenses  
+2025-08-18,Monthly rent payment - CSV Test,-1250.00,Shared housing expense,Checking Account,Cash Expenses
+2025-08-18,Electricity bill payment - CSV Test,-135.50,Monthly utility bill,Checking Account,Cash Expenses
+2025-08-18,Anniversary dinner - CSV Test,-89.25,Special date night,Checking Account,Cash Expenses
+2025-08-19,Person 1 salary - CSV Test,3500.00,Monthly salary deposit,Checking Account,Salary
+2025-08-19,Person 2 freelance income - CSV Test,750.00,Project payment received,Checking Account,Salary
+2025-08-19,Gas station fuel - CSV Test,-45.00,Person 1 car fuel,Checking Account,Cash Expenses
+2025-08-19,Amazon order delivery - CSV Test,-67.99,Person 2 household items,Checking Account,Cash Expenses
+2025-08-19,Pharmacy prescription - CSV Test,-34.50,Monthly medications,Checking Account,Cash Expenses

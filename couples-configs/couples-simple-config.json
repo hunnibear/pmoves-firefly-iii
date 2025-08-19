@@ -1,0 +1,42 @@
+{
+  "date": "Y-m-d",
+  "default_account": 1,
+  "delimiter": "comma",
+  "headers": true,
+  "rules": true,
+  "skip_form": false,
+  "add_import_tag": true,
+  "specifics": [
+    "AppendHash"
+  ],
+  "roles": [
+    "date_transaction",
+    "description",
+    "amount",
+    "note",
+    "account-name",
+    "opposing-name"
+  ],
+  "do_mapping": {
+    "0": false,
+    "1": false,
+    "2": false,
+    "3": false,
+    "4": true,
+    "5": true
+  },
+  "mapping": {
+    "4": {
+      "Checking Account": 1
+    },
+    "5": {
+      "Cash Expenses": 3,
+      "Salary": 5
+    }
+  },
+  "duplicate_detection_method": "classic",
+  "ignore_duplicate_lines": true,
+  "ignore_duplicate_transactions": true,
+  "version": 3,
+  "flow": "csv"
+}
