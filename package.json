@@ -1,12 +1,17 @@
 {
     "scripts": {
-        "postinstall": "patch-package --error-on-fail"
+        "postinstall": "patch-package --error-on-fail",
+        "test:couples": "node test-couples-functionality.js",
+        "test:couples:puppeteer": "node test-couples-puppeteer.js",
+        "test:couples:both": "npm run test:couples && npm run test:couples:puppeteer"
     },
     "workspaces": [
         "resources/assets/v1",
         "resources/assets/v2"
     ],
     "devDependencies": {
-        "postcss": "^8.4.47"
+        "postcss": "^8.4.47",
+        "playwright": "^1.40.0",
+        "puppeteer": "^21.5.0"
     }
 }

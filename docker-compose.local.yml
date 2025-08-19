@@ -5,7 +5,7 @@ networks:
     driver: bridge
   supabase_network:
     external: true
-    name: supabase_network_pmoves-firefly-iii
+    name: supabase_network
 
 volumes:
   firefly_iii_upload:
@@ -37,8 +37,9 @@ services:
       - APP_URL=${APP_URL}
       - SITE_OWNER=${SITE_OWNER}
       - DEFAULT_LANGUAGE=en_US
-      - DEFAULT_LOCALE=equal
-      - TZ=Europe/Amsterdam
+      - DEFAULT_LOCALE=en_US
+      - DEFAULT_CURRENCY=USD
+      - TZ=America/New_York
       - TRUSTED_PROXIES=**
       
       # Database Settings - Using .env.local file
@@ -160,3 +161,25 @@ services:
     depends_on:
       - app
     command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+
+  # Firefly III Data Importer for CSV/Bank Import
+  importer:
+    image: fireflyiii/data-importer:latest
+    hostname: importer
+    container_name: firefly_iii_importer
+    restart: unless-stopped
+    networks:
+      - firefly_iii
+    volumes:
+      - ./import-data:/import
+      - ./couples-configs:/configurations
+    env_file: .importer.env
+    environment:
+      # Couples-specific settings (not in official importer)
+      - COUPLES_MODE_ENABLED=true
+      - DEFAULT_COUPLES_PROCESSING=true
+      
+    depends_on:
+      - app
+    ports:
+      - "8081:8080"  # Data Importer web interface

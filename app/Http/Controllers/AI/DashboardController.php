@@ -13,7 +13,7 @@ namespace FireflyIII\Http\Controllers\AI;
 
 use FireflyIII\Http\Controllers\Controller;
 use FireflyIII\Services\Internal\AIService;
-use FireflyIII\Repositories\TransactionJournal\TransactionJournalRepositoryInterface;
+use FireflyIII\Repositories\Journal\JournalRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
@@ -24,13 +24,13 @@ use Illuminate\Http\JsonResponse;
 class DashboardController extends Controller
 {
     private AIService $aiService;
-    private TransactionJournalRepositoryInterface $transactionJournalRepository;
+    private JournalRepositoryInterface $journalRepository;
 
-    public function __construct(AIService $aiService, TransactionJournalRepositoryInterface $transactionJournalRepository)
+    public function __construct(AIService $aiService, JournalRepositoryInterface $journalRepository)
     {
         parent::__construct();
         $this->aiService = $aiService;
-        $this->transactionJournalRepository = $transactionJournalRepository;
+        $this->journalRepository = $journalRepository;
         
         $this->middleware(function ($request, $next) {
             app('view')->share('title', 'AI Dashboard');
@@ -73,19 +73,13 @@ class DashboardController extends Controller
     {
         try {
             $userId = auth()->id();
-            $accounts = auth()->user()->accounts()->get();
-
-            $journals = $this->transactionJournalRepository->getJournals(
-                $accounts, 
-                [], 
-                [], 
-                [], 
-                null, 
-                null, 
-                null, 
-                null, 
-                100
-            );
+            
+            // Get user's transaction journals directly via relationship
+            $journals = auth()->user()->transactionJournals()
+                ->with(['transactions', 'category'])
+                ->orderBy('created_at', 'desc')
+                ->limit(100)
+                ->get();
 
             $transactions = $journals->map(function ($journal) {
                 return [
@@ -194,19 +188,12 @@ class DashboardController extends Controller
     public function detectAnomalies(): JsonResponse
     {
         try {
-            $accounts = auth()->user()->accounts()->get();
-
-            $journals = $this->transactionJournalRepository->getJournals(
-                $accounts, 
-                [], 
-                [], 
-                [], 
-                null, 
-                null, 
-                null, 
-                null, 
-                1000
-            );
+            // Get user's transaction journals directly via relationship
+            $journals = auth()->user()->transactionJournals()
+                ->with(['transactions', 'category'])
+                ->orderBy('created_at', 'desc')
+                ->limit(1000)
+                ->get();
 
             $transactions = $journals->map(function ($journal) {
                 return [

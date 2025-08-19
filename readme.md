@@ -1,213 +1,481 @@
-[![Packagist][packagist-shield]][packagist-url]
-[![License][license-shield]][license-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Donate][donate-shield]][donate-url]
+# P-Moves Budget App - Docker Setup with Local Supabase
 
-<!-- PROJECT LOGO -->
-<br />
-<p align="center">
-  <a href="https://firefly-iii.org/">
-    <img src="https://raw.githubusercontent.com/firefly-iii/firefly-iii/develop/.github/assets/img/logo-small.png" alt="Firefly III" width="120" height="178">
-  </a>
-</p>
-  <h1 align="center">Firefly III</h1>
+A couples budget planning application built on top of Firefly III personal finance management software, using Docker and local Supabase for complete containerization.
 
-  <p align="center">
-    A free and open source personal finance manager
-    <br />
-    <a href="https://docs.firefly-iii.org/"><strong>Explore the documentation</strong></a>
-    <br />
-    <br />
-    <a href="https://demo.firefly-iii.org/">View the demo</a>
-    ·
-    <a href="https://github.com/firefly-iii/firefly-iii/issues">Report a bug</a>
-    ·
-    <a href="https://github.com/firefly-iii/firefly-iii/issues">Request a feature</a>
-    ·
-    <a href="https://github.com/firefly-iii/firefly-iii/discussions">Ask questions</a>
-  </p>
+## Project Overview
 
-<!-- MarkdownTOC autolink="true" -->
+This project extends Firefly III with a custom "Couples Budget Planner" that includes:
+- **Individual & Shared Expense Tracking**: Separate columns for each partner and shared expenses
+- **Real-time Collaboration**: Partners can work on the same budget simultaneously
+- **Custom API Endpoints**: 
+  - `GET /api/v1/couples/state` - Load budget state
+  - `POST /api/v1/couples/transactions` - Create transactions
+  - `PUT /api/v1/couples/transactions/{id}` - Update transactions
+  - `DELETE /api/v1/couples/transactions/{id}` - Delete transactions
+  - `GET /api/v1/couples/users` - List partner users
+  - `POST /api/v1/couples/partner` - Save partner selection
+- **Integration with Firefly III**: Uses existing user system, accounts, and transaction structure
 
-- [About Firefly III](#about-firefly-iii)
-  - [Purpose](#purpose)
-- [Features](#features)
-- [Who's it for?](#whos-it-for)
-- [The Firefly III eco-system](#the-firefly-iii-eco-system)
-- [Getting Started](#getting-started)
-- [Contributing](#contributing)
-- [Support the development of Firefly III](#support-the-development-of-firefly-iii)
-- [License](#license)
-- [Do you need help, or do you want to get in touch?](#do-you-need-help-or-do-you-want-to-get-in-touch)
-- [Acknowledgements](#acknowledgements)
+## Architecture
 
-<!-- /MarkdownTOC -->
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Nginx Proxy   │    │  Firefly III    │    │   PostgreSQL    │
+│   (Port 80)     │◄──►│   Application   │◄──►│   (Supabase)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │
+                       ┌─────────────────┐
+                       │   Cron Service  │
+                       │  (Scheduled     │
+                       │   Tasks)        │
+                       └─────────────────┘
+```
 
-## About Firefly III
+## Prerequisites
 
-<p align="center">
-	<img src="https://raw.githubusercontent.com/firefly-iii/firefly-iii/develop/.github/assets/img/imac-complete.png" alt="Firefly III on iMac" />
-</p>
+### System Requirements
+- **Docker**: Version 20.0+ with Docker Compose V2
+- **Node.js**: Version 16+ (for Supabase CLI)
+- **Operating System**: Windows 10+, macOS 10.15+, or Linux
+- **Memory**: Minimum 4GB RAM recommended
+- **Storage**: At least 5GB free space
 
-"Firefly III" is a (self-hosted) manager for your personal finances. It can help you keep track of your expenses and income, so you can spend less and save more. Firefly III supports the use of budgets, categories and tags. Using a bunch of external tools, you can import data. It also has many neat financial reports available.
+### Required Software Installation
 
-Firefly III should give you **insight** into and **control** over your finances. Money should be useful, not scary. You should be able to *see* where it is going, to *feel* your expenses and to... wow, I'm going overboard with this aren't I?
+#### 1. Install Docker Desktop
+- **Windows**: Download from [Docker Desktop for Windows](https://docs.docker.com/desktop/windows/install/)
+- **macOS**: Download from [Docker Desktop for Mac](https://docs.docker.com/desktop/mac/install/)
+- **Linux**: Follow [Docker Engine installation guide](https://docs.docker.com/engine/install/)
 
-But you get the idea: this is your money. These are your expenses. Stop them from controlling you. I built this tool because I started to dislike money. Having money, not having money, paying bills with money, you get the idea. But no more. I want to feel "safe", whatever my balance is. And I hope this tool can help you. I know it helps me.
+#### 2. Install Node.js and Supabase CLI
 
-### Purpose
+```powershell
+# Install Node.js from https://nodejs.org/ or using Chocolatey
+choco install nodejs
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/firefly-iii/firefly-iii/develop/.github/assets/img/ipad-complete.png" alt="Firefly III on iPad" width="600">
-</p>
+# Install Supabase CLI as dev dependency (recommended method)
+npm i supabase --save-dev
 
-Personal financial management is pretty difficult, and everybody has their own approach to it. Some people make budgets, other people limit their cashflow by throwing away their credit cards, others try to increase their current cashflow. There are tons of ways to save and earn money. Firefly III works on the principle that if you know where your money is going, you can stop it from going there.
+# Verify installations
+docker --version
+node --version
+npx supabase --version
+```
 
-By keeping track of your expenses and your income you can budget accordingly and save money. Stop living from paycheck to paycheck but give yourself the financial wiggle room you need.
+## Setup Instructions
 
-You can read more about the purpose of Firefly III in the [documentation](https://docs.firefly-iii.org/).
+### Step 1: Clone and Prepare the Repository
 
-## Features
+```powershell
+# Clone the repository
+git clone https://github.com/hunnibear/pmoves-budgapp.git
+cd pmoves-budgapp
 
-Firefly III is pretty feature packed. Some important stuff first:
+# Verify project structure
+ls -la
+```
 
-* It is completely self-hosted and isolated, and will never contact external servers until you explicitly tell it to.
-* It features a REST JSON API that covers almost every part of Firefly III.
+### Step 2: Initialize Supabase
 
-The most exciting features are:
+```powershell
+# Initialize Supabase in the project directory
+npx supabase init
 
-* Create [recurring transactions to manage your money](https://docs.firefly-iii.org/explanation/financial-concepts/recurring/).
-* [Rule based transaction handling](https://docs.firefly-iii.org/how-to/firefly-iii/features/rules/) with the ability to create your own rules.
+# This creates a supabase/ directory with:
+# - config.toml (Supabase configuration)
+# - seed.sql (Initial data)
+# - migrations/ (Database schema changes)
+```
 
-Then the things that make you go "yeah OK, makes sense".
+### Step 3: Configure Environment Variables
 
-* A [double-entry](https://en.wikipedia.org/wiki/Double-entry_bookkeeping_system) bookkeeping system.
-* Save towards a goal using [piggy banks](https://docs.firefly-iii.org/explanation/financial-concepts/piggy-banks/).
-* View [income and expense reports](https://docs.firefly-iii.org/how-to/firefly-iii/finances/reports/).
+The project uses a `.env` file for configuration. Key settings for Supabase integration:
 
-And the things you would hope for but not expect:
+```env
+# Application Settings
+APP_ENV=local
+APP_DEBUG=true
+APP_KEY=base64:SomeRandomStringOf32CharsExactly==
+SITE_OWNER=mail@example.com
 
-* 2 factor authentication for extra security 🔒.
-* Supports [any currency you want](https://docs.firefly-iii.org/how-to/firefly-iii/features/currencies/).
-* There is a [Docker image](https://docs.firefly-iii.org/how-to/firefly-iii/installation/docker/).
+# Timezone Configuration
+TZ=Europe/Amsterdam
 
-And to organise everything:
+# Database Configuration (Supabase)
+DB_CONNECTION=pgsql
+DB_HOST=localhost
+DB_PORT=54322
+DB_DATABASE=postgres
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
 
-* Clear views that should show you how you're doing.
-* Easy navigation through your records.
-* Lots of charts because we all love them.
+# Security
+STATIC_CRON_TOKEN=YourExactly32CharacterTokenHere12
+```
 
-Many more features are listed in the [documentation](https://docs.firefly-iii.org/explanation/firefly-iii/about/introduction/).
+#### Generate Secure Keys
 
-## Who's it for?
-<img src="https://raw.githubusercontent.com/firefly-iii/firefly-iii/develop/.github/assets/img/iphone-complete.png" alt="Firefly III on iPhone" align="left" width="250">
+```powershell
+# Generate APP_KEY (Laravel)
+# Use online generator or PowerShell:
+$key = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | % {[char]$_})
+echo "APP_KEY=base64:$([Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($key)))"
 
- This application is for people who want to track their finances, keep an eye on their money **without having to upload their financial records to the cloud**. You're a bit tech-savvy, you like open source software and you don't mind tinkering with (self-hosted) servers.
- 
- <br clear="left"/>
+# Generate STATIC_CRON_TOKEN (exactly 32 characters)
+$cronToken = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | % {[char]$_})
+echo "STATIC_CRON_TOKEN=$cronToken"
+```
 
-## The Firefly III eco-system
+### Step 4: Start Supabase
 
-Several users have built pretty awesome stuff around the Firefly III API. [Check out these tools in the documentation](https://docs.firefly-iii.org/references/firefly-iii/third-parties/apps/).
+```powershell
+# Start local Supabase stack
+npx supabase start
 
-## Getting Started
+# This will output connection details:
+# API URL: http://localhost:54321
+# DB URL: postgresql://postgres:postgres@localhost:54322/postgres
+# Studio URL: http://localhost:54323
+```
 
-There are many ways to run Firefly III
-1. There is a [demo site](https://demo.firefly-iii.org) with an example financial administration already present.
-2. You can [install it on your server](https://docs.firefly-iii.org/how-to/firefly-iii/installation/self-managed/).
-3. You can [run it using Docker](https://docs.firefly-iii.org/how-to/firefly-iii/installation/docker/).
-4. You can [deploy via Kubernetes](https://firefly-iii.github.io/kubernetes/).
-5. You can [install it using Softaculous](https://www.softaculous.com/softaculous/apps/others/Firefly_III).
-6. You can [install it using AMPPS](https://www.ampps.com/).
-7. You can [install it on Cloudron](https://cloudron.io/store/org.fireflyiii.cloudronapp.html).
-8. You can [install it on Lando](https://gist.github.com/ArtisKrumins/ccb24f31d6d4872b57e7c9343a9d1bf0).
-9. You can [install it on Yunohost](https://github.com/YunoHost-Apps/firefly-iii).
+**Important**: Keep this terminal window open or note the output. Supabase must be running before starting Docker containers.
 
-## 🤖 AI Integration
+### Step 5: Verify Docker Compose Configuration
 
-Firefly III now includes advanced AI capabilities to enhance your financial management experience:
+Ensure your `docker-compose.yml` is configured correctly:
 
-- **🧠 Smart Transaction Categorization**: AI-powered automatic categorization using local and cloud models
-- **💡 Financial Insights**: Personalized spending analysis and budget recommendations
-- **🔍 Anomaly Detection**: Identify unusual spending patterns and potential duplicates
-- **💬 AI Chat Assistant**: Interactive financial advisor for real-time advice
-- **🏠 Local AI Support**: Privacy-focused processing with Ollama and Llama models
-- **☁️ Cloud AI Integration**: OpenAI GPT-4 and Groq for advanced reasoning
+```yaml
+services:
+  app:
+    image: fireflyiii/core:latest
+    hostname: app
+    container_name: firefly_iii_core
+    restart: always
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env
+    networks:
+      - firefly_iii
+    ports:
+      - "80:8080"
+    depends_on: []
 
-### Getting Started with AI Features
+  cron:
+    image: alpine
+    restart: always
+    container_name: firefly_iii_cron
+    env_file: .env
+    command: sh -c "
+      apk add tzdata && \
+      ln -fs /usr/share/zoneinfo/$$TZ /etc/localtime && \
+      echo \"0 3 * * * wget -qO- http://app:8080/api/v1/cron/$$STATIC_CRON_TOKEN;echo\"
+      | crontab - && \
+      crond -f -L /dev/stdout"
+    networks:
+      - firefly_iii
+    depends_on:
+      - app
 
-1. **Access the AI Dashboard**: Navigate to `/ai` or click "AI Assistant" in the sidebar
-2. **Test Connectivity**: Verify your AI models are running and accessible
-3. **Try Transaction Categorization**: Input transaction details for smart categorization
-4. **Explore Insights**: Generate personalized financial recommendations
-5. **Chat with AI**: Ask questions about your spending patterns and get advice
+volumes:
+  firefly_iii_upload:
 
-For detailed setup and usage instructions, see [README-AI.md](README-AI.md).
+networks:
+  firefly_iii:
+    driver: bridge
+```
 
-## Contributing
+### Step 6: Start the Application
 
-You can contact me at [james@firefly-iii.org](mailto:james@firefly-iii.org), you may open an issue in the [main repository](https://github.com/firefly-iii/firefly-iii) or contact me through [gitter](https://gitter.im/firefly-iii/firefly-iii) and [Mastodon](https://fosstodon.org/@ff3).
+```powershell
+# Start all Docker services
+docker-compose up -d
 
-Of course, there are some [contributing guidelines](https://docs.firefly-iii.org/explanation/support/#contributing-code) and a [code of conduct](https://github.com/firefly-iii/firefly-iii/blob/main/.github/code_of_conduct.md), which I invite you to check out.
+# Verify containers are running
+docker-compose ps
 
-I can always use your help [squashing bugs](https://docs.firefly-iii.org/explanation/support/), thinking about [new features](https://docs.firefly-iii.org/explanation/support/) or [translating Firefly III](https://docs.firefly-iii.org/how-to/firefly-iii/development/translations/) into other languages.
+# View application logs
+docker-compose logs -f app
+```
 
-[Sonarcloud][sc-project-url] scans the code of Firefly III. If you want to help improve Firefly III, check out the latest reports and take your pick!
+### Step 7: Initial Application Setup
 
-[![Quality Gate Status][sc-gate-shield]][sc-project-url] [![Bugs][sc-bugs-shield]][sc-project-url] [![Code Smells][sc-smells-shield]][sc-project-url] [![Vulnerabilities][sc-vuln-shield]][sc-project-url]
+1. **Access the application**: http://localhost
+2. **Complete Firefly III setup wizard**:
+   - Create admin user account
+   - Configure basic settings
+   - Set up initial accounts (checking, savings, etc.)
 
-There is also a [security policy](https://github.com/firefly-iii/firefly-iii/security/policy).
+3. **Access Couples Budget Planner**: http://localhost/couples
+4. **Configure partner**:
+   - Create a second user account in Firefly III
+   - In the Couples Budget Planner, go to Settings tab
+   - Select your partner from the dropdown
 
-[![CII Best Practices][bp-badge]][bp-url]
+## Features and Usage
 
-<!-- SPONSOR TEXT -->
+### Couples Budget Planner Features
 
-## Support the development of Firefly III
+#### 1. **Three-Column Budget Layout**
+- **Unassigned**: New expenses before categorization
+- **Person 1**: Individual expenses for the primary user
+- **Person 2**: Individual expenses for the partner
+- **Shared**: Joint expenses with configurable split ratios
 
-If you like Firefly III and if it helps you save lots of money, why not send me a dime for every dollar saved! 🥳
+#### 2. **Drag-and-Drop Interface**
+- Move expenses between categories by dragging
+- Automatic tag assignment (`couple-p1`, `couple-p2`, `couple-shared`)
+- Real-time budget recalculation
 
-OK that was a joke. If you feel Firefly III made your life better, please consider contributing as a sponsor. Please check out my [Patreon](https://www.patreon.com/jc5) and [GitHub Sponsors](https://github.com/sponsors/JC5) page for more information. You can also [buy me a ☕️ coffee at ko-fi.com](https://ko-fi.com/Q5Q5R4SH1). Thank you for your consideration.
+#### 3. **Expense Management**
+- Add expenses with description and amount
+- Edit existing expenses inline
+- Delete expenses with confirmation
+- Preset amount buttons ($25, $50, $100, $250)
 
-<!-- END OF SPONSOR TEXT -->
+#### 4. **Goals Integration**
+- Linked to Firefly III's Piggy Bank system
+- Add/remove savings goals
+- Track progress toward financial objectives
+
+#### 5. **Partner Collaboration**
+- Select partner from existing Firefly III users
+- Separate income and expense tracking
+- Shared expense splitting (50/50, income-based, or custom)
+
+### API Endpoints
+
+The application extends Firefly III with custom API endpoints:
+
+```
+GET    /api/v1/couples/state        # Load current budget state
+POST   /api/v1/couples/transactions # Create new transaction
+PUT    /api/v1/couples/transactions/{id} # Update transaction
+DELETE /api/v1/couples/transactions/{id} # Delete transaction
+PUT    /api/v1/couples/transactions/{id}/tag # Update transaction category
+GET    /api/v1/couples/users        # List available partner users
+POST   /api/v1/couples/partner      # Save partner selection
+POST   /api/v1/couples/goals        # Create savings goal
+DELETE /api/v1/couples/goals/{id}   # Delete savings goal
+```
+
+## Database Schema Integration
+
+### Custom Tags
+- `couple-p1`: Person 1's individual expenses
+- `couple-p2`: Person 2's individual expenses  
+- `couple-shared`: Shared expenses
+
+### Firefly III Integration
+- **Accounts**: Uses existing asset accounts for income calculation
+- **Categories**: Standard Firefly III expense categories
+- **Transactions**: Creates proper double-entry transactions
+- **Piggy Banks**: Goals are stored as piggy banks
+- **User Groups**: Partner selection respects user group boundaries
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. **Supabase Connection Failed**
+
+**Symptoms**: Database connection errors, app won't start
+
+**Solutions**:
+```powershell
+# Check Supabase status
+npx supabase status
+
+# Restart Supabase if needed
+npx supabase stop
+npx supabase start
+
+# Verify connection details match .env file
+```
+
+#### 2. **Port 80 Already in Use**
+
+**Symptoms**: Docker fails to bind to port 80
+
+**Solutions**:
+```powershell
+# Check what's using port 80
+netstat -ano | findstr :80
+
+# Option 1: Stop conflicting service (IIS, Apache, etc.)
+# Option 2: Change port in docker-compose.yml
+ports:
+  - "8080:8080"  # Use port 8080 instead
+```
+
+#### 3. **APP_KEY Not Set Error**
+
+**Symptoms**: Laravel application key error
+
+**Solutions**:
+```powershell
+# Generate and set proper APP_KEY in .env file
+# Ensure it's base64 encoded and exactly 32 characters
+```
+
+#### 4. **Cron Service Not Working**
+
+**Symptoms**: Scheduled tasks not running
+
+**Solutions**:
+```powershell
+# Verify STATIC_CRON_TOKEN is exactly 32 characters
+# Check cron container logs
+docker-compose logs cron
+
+# Ensure timezone is properly set
+```
+
+#### 5. **Couples Planner Not Loading**
+
+**Symptoms**: /couples route returns 404 or errors
+
+**Solutions**:
+```powershell
+# Verify Firefly III integration is complete
+# Check that custom routes and controllers are in place
+# Review app logs for PHP errors
+docker-compose logs app | grep -i error
+```
+
+### Useful Commands
+
+```powershell
+# Container Management
+docker-compose ps                    # List running containers
+docker-compose down                  # Stop all services
+docker-compose up -d                 # Start in background
+docker-compose restart app           # Restart specific service
+docker-compose logs -f app          # Follow logs
+
+# Supabase Management
+npx supabase status                      # Check Supabase services
+npx supabase dashboard                   # Open web dashboard
+npx supabase stop                        # Stop Supabase
+npx supabase start                       # Start Supabase
+
+# Database Access
+npx supabase db reset --local            # Reset database
+npx supabase db dump --local > backup.sql # Backup database
+```
+
+## Data Management
+
+### Backup Procedures
+
+#### 1. **Database Backup**
+```powershell
+# Create database dump
+npx supabase db dump --local > firefly-backup-$(Get-Date -Format "yyyy-MM-dd").sql
+
+# Backup with compression
+npx supabase db dump --local | gzip > firefly-backup-$(Get-Date -Format "yyyy-MM-dd").sql.gz
+```
+
+#### 2. **File Upload Backup**
+```powershell
+# Backup uploaded files volume
+docker run --rm -v firefly_iii_upload:/data -v ${PWD}:/backup alpine tar czf /backup/uploads-$(Get-Date -Format "yyyy-MM-dd").tar.gz /data
+```
+
+### Restore Procedures
+
+#### 1. **Database Restore**
+```powershell
+# Stop application first
+docker-compose down
+
+# Reset and restore database
+npx supabase db reset --local
+cat firefly-backup-2025-08-18.sql | psql "postgresql://postgres:postgres@localhost:54322/postgres"
+
+# Restart application
+docker-compose up -d
+```
+
+#### 2. **File Upload Restore**
+```powershell
+# Restore uploaded files
+docker run --rm -v firefly_iii_upload:/data -v ${PWD}:/backup alpine tar xzf /backup/uploads-2025-08-18.tar.gz -C /
+```
+
+## Production Deployment Considerations
+
+### Security Hardening
+
+1. **Environment Variables**:
+   - Generate strong, unique APP_KEY and STATIC_CRON_TOKEN
+   - Use secure database passwords
+   - Set APP_DEBUG=false in production
+
+2. **HTTPS Configuration**:
+   - Use reverse proxy (nginx, Traefik) for SSL termination
+   - Obtain SSL certificates (Let's Encrypt recommended)
+
+3. **Database Security**:
+   - Use managed PostgreSQL service for production
+   - Enable connection encryption
+   - Implement proper backup and monitoring
+
+4. **Container Security**:
+   - Run containers as non-root users
+   - Use Docker secrets for sensitive data
+   - Regularly update base images
+
+### Performance Optimization
+
+1. **Resource Limits**:
+```yaml
+services:
+  app:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+```
+
+2. **Caching**:
+   - Enable Redis for session storage
+   - Configure application-level caching
+   - Use CDN for static assets
+
+## Development Setup
+
+### Local Development with Hot Reload
+
+For development work on the Couples Budget Planner:
+
+```yaml
+# docker-compose.override.yml
+services:
+  app:
+    volumes:
+      - ./firefly-iii:/var/www/html
+    environment:
+      APP_DEBUG: true
+      APP_ENV: local
+```
+
+### Custom Code Locations
+
+- **Controllers**: `firefly-iii/app/Http/Controllers/CouplesController.php`
+- **API Controllers**: `firefly-iii/app/Api/V1/Controllers/Couples/`
+- **Views**: `firefly-iii/resources/views/couples/`
+- **Routes**: `firefly-iii/routes/web.php` and `firefly-iii/routes/api.php`
+- **Frontend**: `firefly-iii/resources/views/couples/index.twig`
+
+## Support and Resources
+
+- **Firefly III Documentation**: https://docs.firefly-iii.org/
+- **Supabase Documentation**: https://supabase.com/docs
+- **Docker Documentation**: https://docs.docker.com/
+- **Project Repository**: https://github.com/hunnibear/pmoves-budgapp
 
 ## License
 
-This work [is licensed](https://github.com/firefly-iii/firefly-iii/blob/main/LICENSE) under the [GNU Affero General Public License v3](https://www.gnu.org/licenses/agpl-3.0.html).
-
-<!-- HELP TEXT -->
-
-## Do you need help, or do you want to get in touch?
-
-Do you want to contact me? You can email me at [james@firefly-iii.org](mailto:james@firefly-iii.org) or get in touch through one of the following support channels:
-
-- [GitHub Discussions](https://github.com/firefly-iii/firefly-iii/discussions/) for questions and support
-- [Gitter.im](https://gitter.im/firefly-iii/firefly-iii) for a good chat and a quick answer
-- [GitHub Issues](https://github.com/firefly-iii/firefly-iii/issues) for bugs and issues
-- <a rel="me" href="https://fosstodon.org/@ff3">Mastodon</a> for news and updates
-
-<!-- END OF HELP TEXT -->
-
-
-## Acknowledgements
-
-Over time, [many people have contributed to Firefly III](https://github.com/firefly-iii/firefly-iii/graphs/contributors). I'm grateful for their support and code contributions.
-
-The Firefly III logo is made by the excellent Cherie Woo.
-
-[packagist-shield]: https://img.shields.io/packagist/v/grumpydictator/firefly-iii.svg?style=flat-square
-[packagist-url]: https://packagist.org/packages/grumpydictator/firefly-iii
-[license-shield]: https://img.shields.io/github/license/firefly-iii/firefly-iii.svg?style=flat-square
-[license-url]: https://www.gnu.org/licenses/agpl-3.0.html
-[stars-shield]: https://img.shields.io/github/stars/firefly-iii/firefly-iii.svg?style=flat-square
-[stars-url]: https://github.com/firefly-iii/firefly-iii/stargazers
-[donate-shield]: https://img.shields.io/badge/donate-%24%20%E2%82%AC-brightgreen?style=flat-square
-[donate-url]: #support-the-development-of-firefly-iii
-[build-shield]: https://api.travis-ci.com/firefly-iii/firefly-iii.svg?branch=master
-[build-url]: https://travis-ci.com/github/firefly-iii/firefly-iii
-[sc-gate-shield]: https://sonarcloud.io/api/project_badges/measure?project=firefly-iii_firefly-iii&metric=alert_status
-[sc-bugs-shield]: https://sonarcloud.io/api/project_badges/measure?project=firefly-iii_firefly-iii&metric=bugs
-[sc-smells-shield]: https://sonarcloud.io/api/project_badges/measure?project=firefly-iii_firefly-iii&metric=code_smells
-[sc-vuln-shield]: https://sonarcloud.io/api/project_badges/measure?project=firefly-iii_firefly-iii&metric=vulnerabilities
-[sc-project-url]: https://sonarcloud.io/dashboard?id=firefly-iii_firefly-iii
-[bp-badge]: https://bestpractices.coreinfrastructure.org/projects/6335/badge
-[bp-url]: https://bestpractices.coreinfrastructure.org/projects/6335 
+This project builds upon Firefly III, which is licensed under the AGPL-3.0 License. The Couples Budget Planner extensions maintain the same license.

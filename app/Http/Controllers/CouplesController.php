@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace FireflyIII\Http\Controllers;
 
-use Illuminate\View\View;
+use FireflyIII\Http\Controllers\Controller;
 
 class CouplesController extends Controller
 {
-    public function index(): View
+    public function index()
     {
         return view('couples.index');
     }
