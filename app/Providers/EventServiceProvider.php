@@ -173,7 +173,7 @@ class EventServiceProvider extends ServiceProvider
             // is a Transaction Journal related event.
             StoredTransactionGroup::class            => [
                 'FireflyIII\Handlers\Events\StoredGroupEventHandler@runAllHandlers',
-                'App\Listeners\AutoCategorizeTransactionListener@handle',
+                // 'App\Listeners\AutoCategorizeTransactionListener@handle', // Temporarily disabled for import testing
             ],
             // is a Transaction Journal related event.
             UpdatedTransactionGroup::class           => [
