@@ -9,8 +9,8 @@ use FireflyIII\Enums\AccountTypeEnum;
 use FireflyIII\Enums\TransactionTypeEnum;
 use FireflyIII\Models\TransactionJournal;
 use FireflyIII\Models\Tag;
-use FireflyIII\Models\Transaction; // Import the Transaction model
-use FireflyIII\Models\PiggyBank; // Import the PiggyBank model
+use FireflyIII\Models\Transaction;
+use FireflyIII\Models\PiggyBank;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -23,97 +23,77 @@ class CouplesController extends Controller
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        // Income
-        $revenueAccounts = $user->accounts()->accountTypeIn([AccountTypeEnum::REVENUE->value])->get();
+        // Income calculation - get all income for this month
         $income = 0;
-        foreach ($revenueAccounts as $account) {
-            $transactions = $account->transactions()
-                ->whereHas('transactionJournal', function ($query) use ($startOfMonth, $endOfMonth) {
-                    $query->where('date', '>=', $startOfMonth)
-                        ->where('date', '<=', $endOfMonth)
-                        ->whereHas('transactionType', function ($q) {
-                            $q->where('type', TransactionTypeEnum::DEPOSIT->value);
-                        });
-                })
-                ->get();
-            $income += $transactions->sum('amount');
+        $incomeJournals = $user->transactionJournals()
+            ->where('date', '>=', $startOfMonth)
+            ->where('date', '<=', $endOfMonth)
+            ->whereHas('transactionType', function ($query) {
+                $query->where('type', TransactionTypeEnum::DEPOSIT->value);
+            })
+            ->with('transactions')
+            ->get();
+
+        foreach ($incomeJournals as $journal) {
+            foreach ($journal->transactions as $transaction) {
+                if ($transaction->amount > 0) { // Positive amounts are income
+                    $income += $transaction->amount;
+                }
+            }
         }
 
-        // Expenses
-        $p1Transactions = $user->transactions()
-            ->whereHas('tags', function ($query) {
-                $query->where('tag', 'couple-p1');
-            })
-            ->whereHas('transactionJournal', function ($query) use ($startOfMonth, $endOfMonth) {
-                $query->where('date', '>=', $startOfMonth)
-                    ->where('date', '<=', $endOfMonth);
-            })
-            ->get()
-            ->map(function ($transaction) {
-                return [
-                    'id' => $transaction->id,
-                    'description' => $transaction->description,
-                    'amount' => $transaction->amount,
-                ];
-            });
+        // Helper function to get transactions by tag
+        $getTransactionsByTag = function ($tagName) use ($user, $startOfMonth, $endOfMonth) {
+            return $user->transactionJournals()
+                ->where('date', '>=', $startOfMonth)
+                ->where('date', '<=', $endOfMonth)
+                ->whereHas('tags', function ($query) use ($tagName) {
+                    $query->where('tag', $tagName);
+                })
+                ->with(['transactions'])
+                ->get()
+                ->flatMap(function ($journal) {
+                    return $journal->transactions->where('amount', '<', 0)->map(function ($transaction) use ($journal) {
+                        return [
+                            'id' => $transaction->id,
+                            'description' => $journal->description,
+                            'amount' => abs($transaction->amount), // Convert to positive for UI
+                        ];
+                    });
+                });
+        };
 
-        $p2Transactions = $user->transactions()
-            ->whereHas('tags', function ($query) {
-                $query->where('tag', 'couple-p2');
-            })
-            ->whereHas('transactionJournal', function ($query) use ($startOfMonth, $endOfMonth) {
-                $query->where('date', '>=', $startOfMonth)
-                    ->where('date', '<=', $endOfMonth);
-            })
-            ->get()
-            ->map(function ($transaction) {
-                return [
-                    'id' => $transaction->id,
-                    'description' => $transaction->description,
-                    'amount' => $transaction->amount,
-                ];
-            });
+        // Get transactions by couples tags
+        $p1Transactions = $getTransactionsByTag('couple-p1');
+        $p2Transactions = $getTransactionsByTag('couple-p2');
+        $sharedTransactions = $getTransactionsByTag('couple-shared');
 
-        $sharedTransactions = $user->transactions()
-            ->whereHas('tags', function ($query) {
-                $query->where('tag', 'couple-shared');
-            })
-            ->whereHas('transactionJournal', function ($query) use ($startOfMonth, $endOfMonth) {
-                $query->where('date', '>=', $startOfMonth)
-                    ->where('date', '<=', $endOfMonth);
-            })
-            ->get()
-            ->map(function ($transaction) {
-                return [
-                    'id' => $transaction->id,
-                    'description' => $transaction->description,
-                    'amount' => $transaction->amount,
-                ];
-            });
-            
-        $unassignedTransactions = $user->transactions()
+        // Get unassigned transactions (no couples tags)
+        $unassignedTransactions = $user->transactionJournals()
+            ->where('date', '>=', $startOfMonth)
+            ->where('date', '<=', $endOfMonth)
             ->whereDoesntHave('tags', function ($query) {
                 $query->whereIn('tag', ['couple-p1', 'couple-p2', 'couple-shared']);
             })
-            ->whereHas('transactionJournal', function ($query) use ($startOfMonth, $endOfMonth) {
-                $query->where('date', '>=', $startOfMonth)
-                    ->where('date', '<=', $endOfMonth);
-            })
+            ->with(['transactions'])
             ->get()
-            ->map(function ($transaction) {
-                return [
-                    'id' => $transaction->id,
-                    'description' => $transaction->description,
-                    'amount' => $transaction->amount,
-                ];
+            ->flatMap(function ($journal) {
+                return $journal->transactions->where('amount', '<', 0)->map(function ($transaction) use ($journal) {
+                    return [
+                        'id' => $transaction->id,
+                        'description' => $journal->description,
+                        'amount' => abs($transaction->amount), // Convert to positive for UI
+                    ];
+                });
             });
 
-        // Goals
+        // Goals from PiggyBanks
         $goals = $user->piggyBanks()->get()->map(function ($piggyBank) {
             return [
+                'id' => $piggyBank->id,
                 'name' => $piggyBank->name,
                 'amount' => $piggyBank->target_amount,
-                'saved' => $piggyBank->accounts->sum('pivot.current_amount'),
+                'saved' => $piggyBank->current_amount ?? 0,
                 'date' => $piggyBank->target_date ? $piggyBank->target_date->format('Y-m-d') : null,
             ];
         });
@@ -167,29 +147,43 @@ class CouplesController extends Controller
             $tag = 'couple-shared';
         }
 
+        // Get default accounts for the transaction
+        $defaultAssetAccount = $user->accounts()->accountTypeIn([AccountTypeEnum::ASSET->value])->first();
+        $defaultExpenseAccount = $user->accounts()->accountTypeIn([AccountTypeEnum::EXPENSE->value])->first();
+
+        if (!$defaultAssetAccount || !$defaultExpenseAccount) {
+            return new JsonResponse(['message' => 'Default accounts not found'], 400);
+        }
+
         // Create a new transaction journal
         $journal = new TransactionJournal();
         $journal->user_id = $user->id;
         $journal->description = $description;
-        $journal->amount = $amount;
         $journal->date = Carbon::now();
-        $journal->transaction_type_id = TransactionTypeEnum::WITHDRAWAL->value; // Assuming it's an expense
+        $journal->transaction_type_id = 1; // Withdrawal type ID
         $journal->save();
 
-        // Create a new transaction
-        $transaction = new Transaction(); // Fully qualify to avoid conflict with TransactionJournal
-        $transaction->account_id = $user->accounts()->accountTypeIn([AccountTypeEnum::EXPENSE->value])->first()->id; // Assuming an expense account
-        $transaction->transaction_journal_id = $journal->id;
-        $transaction->amount = $amount;
-        $transaction->save();
+        // Create source transaction (negative amount from asset account)
+        $sourceTransaction = new Transaction();
+        $sourceTransaction->account_id = $defaultAssetAccount->id;
+        $sourceTransaction->transaction_journal_id = $journal->id;
+        $sourceTransaction->amount = -$amount; // Negative for withdrawal from asset
+        $sourceTransaction->save();
+
+        // Create destination transaction (positive amount to expense account)
+        $destinationTransaction = new Transaction();
+        $destinationTransaction->account_id = $defaultExpenseAccount->id;
+        $destinationTransaction->transaction_journal_id = $journal->id;
+        $destinationTransaction->amount = $amount; // Positive for expense
+        $destinationTransaction->save();
 
         // Attach the tag if applicable
         if ($tag) {
-            $tagModel = Tag::firstOrCreate(['tag' => $tag]);
+            $tagModel = Tag::firstOrCreate(['tag' => $tag, 'user_id' => $user->id]);
             $journal->tags()->attach($tagModel->id);
         }
 
-        return new JsonResponse(['message' => 'Transaction created successfully', 'transaction' => $transaction->toArray()], 201);
+        return new JsonResponse(['message' => 'Transaction created successfully', 'journal_id' => $journal->id], 201);
     }
 
     public function updateTransaction(Request $request, Transaction $transaction): JsonResponse
@@ -206,13 +200,22 @@ class CouplesController extends Controller
 
         $journal = $transaction->transactionJournal;
         $journal->description = $description;
-        $journal->amount = $amount;
         $journal->save();
 
-        $transaction->amount = $amount;
-        $transaction->save();
+        // Update both transactions in the journal (source and destination)
+        $transactions = $journal->transactions;
+        foreach ($transactions as $trans) {
+            if ($trans->amount < 0) {
+                // This is the source transaction (withdrawal from asset)
+                $trans->amount = -$amount;
+            } else {
+                // This is the destination transaction (to expense)
+                $trans->amount = $amount;
+            }
+            $trans->save();
+        }
 
-        return new JsonResponse(['message' => 'Transaction updated successfully', 'transaction' => $transaction->toArray()]);
+        return new JsonResponse(['message' => 'Transaction updated successfully']);
     }
 
     public function deleteTransaction(Transaction $transaction): JsonResponse
@@ -282,5 +285,19 @@ class CouplesController extends Controller
         $piggyBank->save();
 
         return new JsonResponse(['message' => 'Goal created successfully', 'goal' => $piggyBank->toArray()], 201);
+    }
+
+    public function deleteGoal(PiggyBank $goal): JsonResponse
+    {
+        $user = auth()->user();
+
+        // Ensure the goal belongs to the authenticated user
+        if ($goal->user_id !== $user->id) {
+            return new JsonResponse(['message' => 'Unauthorized'], 403);
+        }
+
+        $goal->delete();
+
+        return new JsonResponse(['message' => 'Goal deleted successfully']);
     }
 }

@@ -903,6 +903,23 @@ Breadcrumbs::for(
     }
 );
 
+// COUPLES BUDGET PLANNER
+Breadcrumbs::for(
+    'couples.index',
+    static function (Generator $breadcrumbs): void {
+        $breadcrumbs->parent('home');
+        $breadcrumbs->push('Couples Budget Planner', route('couples.index'));
+    }
+);
+
+Breadcrumbs::for(
+    'couples.dashboard',
+    static function (Generator $breadcrumbs): void {
+        $breadcrumbs->parent('couples.index');
+        $breadcrumbs->push('Enhanced Dashboard', route('couples.dashboard'));
+    }
+);
+
 // New user Controller
 Breadcrumbs::for(
     'new-user.index',

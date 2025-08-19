@@ -730,6 +730,7 @@ Route::group(
 // Couples Budget Planner API routes:
 Route::group(
     [
+        'middleware' => ['auth:api,sanctum', 'bindings'],
         'namespace' => 'FireflyIII\\Api\\V1\\Controllers\\Couples',
         'prefix'    => 'v1/couples',
         'as'        => 'api.v1.couples.',

@@ -80,7 +80,6 @@ services:
       
       # Security Settings
       - DISABLE_FRAME_HEADER=false
-      - DISABLE_CSP_HEADER=false
       - ALLOW_WEBHOOKS=true
       
       # Logging

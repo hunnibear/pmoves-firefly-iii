@@ -36,11 +36,28 @@
         </a>
     </li>
 
-    <li class="{{ activeRoutePartial('couples') }}">
-        <a href="{{ route('couples.index') }}">
+    <li class="{{ activeRoutePartial('couples') }} treeview">
+        <a href="#">
             <em class="fa fa-users fa-fw"></em>
             <span>Couples</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
         </a>
+        <ul class="treeview-menu">
+            <li class="{{ activeRouteStrict('couples.index') }}">
+                <a href="{{ route('couples.index') }}">
+                    <i class="fa fa-circle-o"></i>
+                    <span>Budget Planner</span>
+                </a>
+            </li>
+            <li class="{{ activeRouteStrict('couples.dashboard') }}">
+                <a href="{{ route('couples.dashboard') }}">
+                    <i class="fa fa-circle-o"></i>
+                    <span>Enhanced Dashboard</span>
+                </a>
+            </li>
+        </ul>
     </li>
 
     <li class="header text-uppercase">{{ 'accounting'|_ }}</li>

@@ -114,12 +114,10 @@
         <div id="insights-tab" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h3 class="text-xl font-bold mb-4">📊 Expense Breakdown</h3>
-                    <canvas id="expenseChart" width="400" height="200"></canvas>
+                    <div id="expenseChart"></div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h3 class="text-xl font-bold mb-4">💰 Income vs Expenses</h3>
-                    <canvas id="incomeChart" width="400" height="200"></canvas>
+                    <div id="incomeChart"></div>
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow-md lg:col-span-2">
                     <h3 class="text-xl font-bold mb-4">🎯 Financial Health Score</h3>
@@ -189,14 +187,45 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // --- STATE MANAGEMENT ---
-        let state = {};
+        let state = {
+            income: { p1: 0, p2: 0 },
+            unassigned: { transactions: [] },
+            person1: { transactions: [] },
+            person2: { transactions: [] },
+            shared: { transactions: [] },
+            goals: []
+        };
 
         function loadState() {
-            // TODO: Fetch state from Firefly III API
+            // Load state from Firefly III API
+            fetch('{{ route('api.v1.couples.state') }}')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        // Merge API data with default state structure
+                        state = {
+                            income: data.income || { p1: 0, p2: 0 },
+                            unassigned: data.unassigned || { transactions: [] },
+                            person1: data.person1 || { transactions: [] },
+                            person2: data.person2 || { transactions: [] },
+                            shared: data.shared || { transactions: [] },
+                            goals: data.goals || []
+                        };
+                        renderAll();
+                    }
+                })
+                .catch(error => {
+                    console.log('Could not load state from API, using default state:', error);
+                    // Use default state initialized above
+                    renderAll();
+                });
         }
 
         // --- UTILITY & CALCULATION FUNCTIONS ---
@@ -212,14 +241,25 @@
             setTimeout(() => notification.remove(), 3000);
         }
 
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
+
         function calculateBudget() {
-            const p1Income = state.person1.income;
-            const p2Income = state.person2.income;
+            // Safety checks for state structure
+            if (!state || typeof state !== 'object') {
+                console.log('State not initialized yet');
+                return;
+            }
+
+            // Handle both old and new state structures
+            const p1Income = state.income?.p1 || state.person1?.income || 0;
+            const p2Income = state.income?.p2 || state.person2?.income || 0;
             const totalIncome = p1Income + p2Income;
 
-            const p1PersonalExpenses = state.person1.transactions.reduce((sum, tx) => sum + tx.amount, 0);
-            const p2PersonalExpenses = state.person2.transactions.reduce((sum, tx) => sum + tx.amount, 0);
-            const totalSharedExpenses = state.shared.transactions.reduce((sum, tx) => sum + tx.amount, 0);
+            const p1PersonalExpenses = (state.person1?.transactions || []).reduce((sum, tx) => sum + (tx.amount || 0), 0);
+            const p2PersonalExpenses = (state.person2?.transactions || []).reduce((sum, tx) => sum + (tx.amount || 0), 0);
+            const totalSharedExpenses = (state.shared?.transactions || []).reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
             let p1SharedContribution = 0, p2SharedContribution = 0;
             let p1ContributionPercent = 0, p2ContributionPercent = 0;
@@ -348,7 +388,9 @@
                 <div class="form-container" data-list-key="${columnKey}"></div>
             `;
             renderTransactionList(columnData.transactions, container.querySelector('.transaction-list'));
-            renderAddForm(container.querySelector('.form-container'));
+            const formContainer = container.querySelector('.form-container');
+            formContainer.dataset.listKey = columnKey; // Ensure the form container has the list key
+            renderAddForm(formContainer);
         }
 
         function renderTransactionList(transactions, container) {
@@ -407,49 +449,65 @@
         function renderInsights() {
             const calcs = calculateBudget();
             
-            // Expense Chart
-            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
-            if (window.expenseChart) window.expenseChart.destroy();
-            window.expenseChart = new Chart(expenseCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: [state.person1.name, state.person2.name, 'Shared'],
-                    datasets: [{
-                        data: [calcs.p1PersonalExpenses, calcs.p2PersonalExpenses, calcs.totalSharedExpenses],
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+            // Simple visual charts without Chart.js
+            const expenseChartContainer = document.getElementById('expenseChart').parentElement;
+            expenseChartContainer.innerHTML = `
+                <h3 class="text-xl font-bold mb-4">📊 Expense Breakdown</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span>${state.person1.name}</span>
+                        <span class="font-bold">$${calcs.p1PersonalExpenses.toFixed(2)}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded h-4">
+                        <div class="bg-blue-600 h-4 rounded" style="width: ${calcs.totalExpenses > 0 ? (calcs.p1PersonalExpenses / calcs.totalExpenses * 100) : 0}%"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span>${state.person2.name}</span>
+                        <span class="font-bold">$${calcs.p2PersonalExpenses.toFixed(2)}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded h-4">
+                        <div class="bg-green-600 h-4 rounded" style="width: ${calcs.totalExpenses > 0 ? (calcs.p2PersonalExpenses / calcs.totalExpenses * 100) : 0}%"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span>Shared</span>
+                        <span class="font-bold">$${calcs.totalSharedExpenses.toFixed(2)}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded h-4">
+                        <div class="bg-yellow-500 h-4 rounded" style="width: ${calcs.totalExpenses > 0 ? (calcs.totalSharedExpenses / calcs.totalExpenses * 100) : 0}%"></div>
+                    </div>
+                </div>
+            `;
 
-            // Income Chart
-            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-            if (window.incomeChart) window.incomeChart.destroy();
-            window.incomeChart = new Chart(incomeCtx, {
-                type: 'bar',
-                data: {
-                    labels: [state.person1.name, state.person2.name],
-                    datasets: [
-                        {
-                            label: 'Income',
-                            data: [calcs.p1Income, calcs.p2Income],
-                            backgroundColor: '#10b981'
-                        },
-                        {
-                            label: 'Expenses',
-                            data: [calcs.p1TotalExpenses, calcs.p2TotalExpenses],
-                            backgroundColor: '#ef4444'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+            // Income vs Expenses Chart
+            const incomeChartContainer = document.getElementById('incomeChart').parentElement;
+            incomeChartContainer.innerHTML = `
+                <h3 class="text-xl font-bold mb-4">💰 Income vs Expenses</h3>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>${state.person1.name}</span>
+                            <span class="text-sm text-gray-600">Income: $${calcs.p1Income.toFixed(2)} | Expenses: $${calcs.p1TotalExpenses.toFixed(2)}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded h-6 relative">
+                            <div class="bg-green-600 h-6 rounded absolute top-0 left-0" style="width: ${calcs.p1Income > 0 ? Math.min(100, (calcs.p1Income / Math.max(calcs.p1Income, calcs.p2Income) * 100)) : 0}%"></div>
+                            <div class="bg-red-600 h-3 rounded absolute bottom-0 left-0" style="width: ${calcs.p1Income > 0 ? Math.min(100, (calcs.p1TotalExpenses / Math.max(calcs.p1Income, calcs.p2Income) * 100)) : 0}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>${state.person2.name}</span>
+                            <span class="text-sm text-gray-600">Income: $${calcs.p2Income.toFixed(2)} | Expenses: $${calcs.p2TotalExpenses.toFixed(2)}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded h-6 relative">
+                            <div class="bg-green-600 h-6 rounded absolute top-0 left-0" style="width: ${calcs.p2Income > 0 ? Math.min(100, (calcs.p2Income / Math.max(calcs.p1Income, calcs.p2Income) * 100)) : 0}%"></div>
+                            <div class="bg-red-600 h-3 rounded absolute bottom-0 left-0" style="width: ${calcs.p2Income > 0 ? Math.min(100, (calcs.p2TotalExpenses / Math.max(calcs.p1Income, calcs.p2Income) * 100)) : 0}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
 
             // Health Score
             const healthScore = Math.max(0, Math.min(100, calcs.savingsRate * 2));
@@ -472,6 +530,14 @@
 
         function renderGoals() {
             const goalsContainer = document.getElementById('goals-list');
+            
+            // Safety check for goals array
+            if (!state || !state.goals || !Array.isArray(state.goals)) {
+                console.log('Goals not initialized yet');
+                goalsContainer.innerHTML = '<p class="text-gray-500 text-center">Loading goals...</p>';
+                return;
+            }
+            
             if (state.goals.length === 0) {
                 goalsContainer.innerHTML = '<p class="text-gray-500 text-center">No goals set yet. Add one below!</p>';
                 return;
@@ -485,7 +551,7 @@
                     <div class="goal-item bg-gray-50 p-4 rounded-lg">
                         <div class="flex justify-between items-start mb-2">
                             <h4 class="font-semibold">${goal.name}</h4>
-                            <button class="text-red-500 hover:text-red-700" onclick="removeGoal(${goal.id})">×</button>
+                            <button class="remove-goal-btn text-red-500 hover:text-red-700" data-goal-id="${goal.id}">×</button>
                         </div>
                         <div class="text-sm text-gray-600 mb-2">
                             Target: $${goal.amount} | Due: ${new Date(goal.date).toLocaleDateString()} (${daysLeft} days)
@@ -557,19 +623,29 @@
 
         // --- EVENT HANDLERS ---
         function handleFormSubmit(e) {
-            if (!e.target.classList.contains('add-transaction-form')) return;
+            console.log('Form submit event:', e.target, e.target.classList);
+            if (!e.target.classList.contains('add-transaction-form')) {
+                console.log('Not an add-transaction-form, ignoring');
+                return;
+            }
             e.preventDefault();
+            console.log('Processing form submission');
             const form = e.target;
             const listKey = form.parentElement.dataset.listKey;
+            console.log('List key:', listKey);
             const description = form.elements.description.value.trim();
             const amount = parseFloat(form.elements.amount.value);
-            if (!description || isNaN(amount) || amount <= 0) return;
+            console.log('Form data:', { description, amount });
+            if (!description || isNaN(amount) || amount <= 0) {
+                console.log('Invalid form data');
+                return;
+            }
 
             fetch('{{ route('api.v1.couples.transactions.store') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel CSRF token
+                    'X-CSRF-TOKEN': getCsrfToken()
                 },
                 body: JSON.stringify({
                     description: description,
@@ -595,13 +671,28 @@
 
         function handleListInteraction(e) {
             const target = e.target;
+            
+            // Handle remove goal buttons
+            if (target.classList.contains('remove-goal-btn')) {
+                const goalId = target.dataset.goalId;
+                removeGoal(goalId);
+                return;
+            }
+            
             const transactionEl = target.closest('.transaction-item');
             
             // Handle preset amount buttons
             if (target.classList.contains('preset-btn')) {
+                console.log('Preset button clicked:', target);
                 const amount = parseFloat(target.dataset.amount);
                 const amountInput = target.closest('form').querySelector('input[name="amount"]');
-                amountInput.value = amount;
+                console.log('Setting amount:', amount, 'in input:', amountInput);
+                if (amountInput) {
+                    amountInput.value = amount;
+                    console.log('Amount set to:', amountInput.value);
+                } else {
+                    console.error('Amount input not found');
+                }
                 return;
             }
             
@@ -636,7 +727,7 @@
                     fetch(`{{ route('api.v1.couples.transactions.delete', {transaction: 'TRANSACTION_ID'}) }}`.replace('TRANSACTION_ID', id), {
                         method: 'DELETE',
                         headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel CSRF token
+                            'X-CSRF-TOKEN': getCsrfToken()
                         }
                     })
                     .then(response => response.json())
@@ -667,7 +758,7 @@
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel CSRF token
+                            'X-CSRF-TOKEN': getCsrfToken()
                         },
                         body: JSON.stringify({
                             description: list[txIndex].description,
@@ -772,7 +863,7 @@
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel CSRF token
+                            'X-CSRF-TOKEN': getCsrfToken()
                         },
                         body: JSON.stringify({
                             column: targetListKey
@@ -824,7 +915,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel CSRF token
+                    'X-CSRF-TOKEN': getCsrfToken()
                 },
                 body: JSON.stringify({
                     name: name,
@@ -851,7 +942,7 @@
             fetch(`{{ route('api.v1.couples.goals.delete', {goal: 'GOAL_ID'}) }}`.replace('GOAL_ID', id), {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel CSRF token
+                    'X-CSRF-TOKEN': getCsrfToken()
                 }
             })
             .then(response => response.json())
@@ -910,12 +1001,14 @@
 
         // --- INITIALIZATION ---
         function renderAll() {
+            console.log('renderAll called - rendering columns');
             renderColumn('unassigned', document.getElementById('unassigned-column'));
             renderColumn('person1', document.getElementById('person1-column'));
             renderColumn('person2', document.getElementById('person2-column'));
             renderColumn('shared', document.getElementById('shared-column'));
             renderSummary();
             renderQuickStats();
+            console.log('renderAll complete');
         }
 
         // Attach global event listeners
@@ -932,6 +1025,7 @@
         });
         
         // 'click' is for buttons (+/-, delete, presets)
+        console.log('Attaching click event listener');
         document.body.addEventListener('click', handleListInteraction);
         
         // Tab navigation
@@ -969,24 +1063,127 @@
         // Make global for goal removal
         window.removeGoal = removeGoal;
 
-        function loadState() {
-            fetch('{{ route('api.v1.couples.state') }}')
-                .then(response => response.json())
-                .then(data => {
-                    state = data;
-                    renderAll();
-                });
-        }
-
         // Initial render on page load
+        console.log('Starting initialization');
         loadState();
+        
+        // Add debug helpers to window
+        window.debugCouples = {
+            state: () => state,
+            testForm: () => {
+                const form = document.querySelector('.add-transaction-form');
+                console.log('Found form:', form);
+                if (form) {
+                    console.log('Form parent:', form.parentElement);
+                    console.log('Form parent data-list-key:', form.parentElement.dataset.listKey);
+                }
+            },
+            testPreset: () => {
+                const btn = document.querySelector('.preset-btn');
+                console.log('Found preset button:', btn);
+                if (btn) {
+                    btn.click();
+                }
+            }
+        };
+        console.log('Debug helpers added to window.debugCouples');
     </script>
 {% endblock %}
 
 {% block styles %}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        /* Using system fonts instead of external imports */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        /* Essential utility classes */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .bg-white { background-color: #ffffff; }
+        .bg-green-600 { background-color: #16a34a; }
+        .bg-red-600 { background-color: #dc2626; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .bg-yellow-500 { background-color: #eab308; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .text-white { color: #ffffff; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
+        .text-green-600 { color: #16a34a; }
+        .text-red-600 { color: #dc2626; }
+        .text-blue-600 { color: #2563eb; }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .border { border-width: 1px; border-color: #d1d5db; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .w-full { width: 100%; }
+        .h-2 { height: 0.5rem; }
+        .hidden { display: none; }
+        .overflow-x-auto { overflow-x: auto; }
+        .whitespace-nowrap { white-space: nowrap; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .z-10 { z-index: 10; }
+        .z-50 { z-index: 50; }
+        .fixed { position: fixed; }
+        .top-16 { top: 4rem; }
+        .right-4 { right: 1rem; }
+        .min-h-24 { min-height: 6rem; }
+        
+        /* Responsive adjustments */
+        @media (min-width: 640px) {
+            .sm\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sm\\:text-xl { font-size: 1.25rem; }
+            .sm\\:text-2xl { font-size: 1.5rem; }
+            .sm\\:text-base { font-size: 1rem; }
+            .sm\\:text-lg { font-size: 1.125rem; }
+            .sm\\:p-6 { padding: 1.5rem; }
+            .sm\\:gap-4 { gap: 1rem; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .lg\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .lg\\:col-span-2 { grid-column: span 2 / span 2; }
+        }
+        
+        @media (min-width: 1536px) {
+            .max-w-screen-2xl { max-width: 1536px; }
+        }
+        
+        /* Original custom styles */
         .summary-card { transition: all 0.3s ease-in-out; }
         .transaction-item:hover { background-color: #f9fafb; }
         .transaction-item { cursor: default; }

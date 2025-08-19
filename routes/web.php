@@ -150,7 +150,23 @@ Route::group(
 Route::group(
     ['middleware' => ['user-full-auth'], 'namespace' => 'FireflyIII\Http\Controllers', 'prefix' => 'couples', 'as' => 'couples.'],
     static function (): void {
+        // Main couples pages
         Route::get('/', ['uses' => 'CouplesController@index', 'as' => 'index']);
+        Route::get('/dashboard', ['uses' => 'CouplesController@dashboard', 'as' => 'dashboard']);
+        
+        // API endpoints for enhanced functionality
+        Route::get('/api/state', ['uses' => 'CouplesController@state', 'as' => 'api.state']);
+        
+        // Document processing endpoints
+        Route::post('/api/upload-receipt', ['uses' => 'CouplesController@uploadReceipt', 'as' => 'api.upload-receipt']);
+        Route::post('/api/process-bank-statement', ['uses' => 'CouplesController@processBankStatement', 'as' => 'api.process-bank-statement']);
+        
+        // Real-time collaboration endpoints
+        Route::get('/api/realtime-events', ['uses' => 'CouplesController@getRealtimeEvents', 'as' => 'api.realtime-events']);
+        Route::post('/api/broadcast-update', ['uses' => 'CouplesController@broadcastUpdate', 'as' => 'api.broadcast-update']);
+        
+        // Transaction management
+        Route::post('/api/transactions', ['uses' => 'CouplesController@storeTransaction', 'as' => 'api.transactions.store']);
     }
 );
 
