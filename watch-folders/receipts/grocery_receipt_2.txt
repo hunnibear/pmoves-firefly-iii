@@ -1,0 +1,34 @@
+========================
+      GROCERY RECEIPT
+========================
+Store: Fresh Market
+Address: 791 Main St
+Date: 2025-08-19
+Time: 15:50:07
+========================
+
+Milk - 2% Gallon          $5.12
+Broccoli                  $3.79
+Rice - Brown              $6.88
+Bananas (organic)         $2.63
+Chicken Breast            $14.37
+Apples - Honeycrisp       $7.05
+Yogurt - Greek            $7.88
+Cheese - Swiss            $4.03
+
+========================
+Subtotal:              $51.75
+Tax:                   $3.10
+========================
+TOTAL:                 $54.85
+========================
+
+Payment: Credit Card
+Card: ****4057
+Auth: 707684
+
+Thank you for shopping!
+Fresh Market
+Visit us again soon!
+
+Receipt #: FR-250819-1550

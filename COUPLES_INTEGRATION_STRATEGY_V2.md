@@ -52,7 +52,7 @@ pip install langextract[all]
 
 # Configure for local privacy-focused processing
 export LANGEXTRACT_MODEL_PROVIDER=ollama
-export LANGEXTRACT_MODEL_NAME=llama3.2
+export LANGEXTRACT_MODEL_NAME=gemma3:4b
 export LANGEXTRACT_ENDPOINT=http://localhost:11434
 ```
 

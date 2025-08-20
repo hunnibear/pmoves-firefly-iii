@@ -2326,8 +2326,23 @@ return [
     'financial_control'                                                         => 'Financial control',
     'accounting'                                                                => 'Accounting',
     'automation'                                                                => 'Automation',
+    'ai_automation'                                                             => 'AI & Automation',
     'others'                                                                    => 'Others',
     'classification'                                                            => 'Classification',
+    
+    // AI & Watch Folders
+    'watch_folders'                                                             => 'Watch Folders',
+    'watch_folder_files'                                                        => 'Files in watch folder',
+    'ai_agent'                                                                  => 'AI Transaction Agent',
+    'ai_transaction_agent'                                                      => 'AI Transaction Agent',
+    'ai_dashboard'                                                              => 'AI Dashboard',
+    'ai_settings'                                                               => 'AI Settings',
+    'ai_logs'                                                                   => 'AI Logs',
+    'view_files'                                                                => 'View Files',
+    'upload_document'                                                           => 'Upload Document',
+    'processed_files'                                                           => 'Processed Files',
+    'failed_files'                                                              => 'Failed Files',
+    
     'store_transaction'                                                         => 'Store transaction',
 
 

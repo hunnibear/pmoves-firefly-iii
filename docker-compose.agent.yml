@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Existing services from docker-compose.local.yml...
+  
+  # Transaction Intelligence Agent Service
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    container_name: firefly_agent
+    environment:
+      - LANGEXTRACT_URL=http://app:8080
+      - OLLAMA_URL=http://ollama:11434
+      - FIREFLY_API_URL=http://app:8080
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+      - AGENT_ENV=production
+    ports:
+      - "8001:8000"  # Agent API on port 8001
+    volumes:
+      - ./ai-scripts:/app/ai-scripts:ro
+      - ./storage/logs:/app/logs
+    depends_on:
+      - app
+      - redis
+      - ollama
+    networks:
+      - firefly_iii
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  firefly_iii:
+    external: true
+
+volumes:
+  firefly_iii_upload:
+  firefly_iii_db:

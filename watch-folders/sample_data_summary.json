@@ -1,0 +1,61 @@
+{
+  "created_timestamp": "2025-08-19T15:50:07.835804",
+  "purpose": "Couples Dashboard & Agentic AI Testing",
+  "file_categories": {
+    "bank_statements": [
+      "alex_personal_august_2024.csv",
+      "chase_checking_august_2024.csv",
+      "couples_checking_august_2024.csv",
+      "couples_expenses_august_2024.csv",
+      "couples_savings_july_2024.csv",
+      "sam_personal_august_2024.csv"
+    ],
+    "receipts": [
+      "gas_receipt_1.txt",
+      "gas_receipt_2.txt",
+      "grocery_receipt_1.txt",
+      "grocery_receipt_2.txt",
+      "grocery_receipt_2024_08_19.txt",
+      "grocery_receipt_3.txt",
+      "grocery_receipt_4.txt",
+      "grocery_receipt_5.txt",
+      "restaurant_receipt_1.txt",
+      "restaurant_receipt_2.txt",
+      "restaurant_receipt_2024_08_18.txt",
+      "restaurant_receipt_3.txt"
+    ],
+    "utility_bills": [],
+    "documents": [
+      "electric_bill_august_2024.txt",
+      "gas_bill_august_2024.txt",
+      "internet_bill_august_2024.txt",
+      "water_bill_august_2024.txt"
+    ]
+  },
+  "partners": [
+    "Alex",
+    "Sam",
+    "Joint"
+  ],
+  "categories": [
+    "Food & Dining",
+    "Groceries",
+    "Transportation",
+    "Shopping",
+    "Bills & Utilities",
+    "Entertainment",
+    "Health & Fitness",
+    "Home Improvement",
+    "Pet Care",
+    "Travel"
+  ],
+  "testing_scenarios": [
+    "Multi-partner expense tracking",
+    "Category-based transaction analysis",
+    "Receipt OCR and processing",
+    "Utility bill parsing",
+    "Agentic transaction categorization",
+    "Anomaly detection testing",
+    "Pattern recognition validation"
+  ]
+}

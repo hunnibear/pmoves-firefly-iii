@@ -1,4 +1,4 @@
-version: '3.9'
+
 
 services:
   # Firefly III Core Application
@@ -108,11 +108,11 @@ services:
     # Uncomment if you have NVIDIA GPU support
     deploy:
       resources:
-      reservations:
-        devices:
-        - driver: nvidia
-          count: 1
-          capabilities: [gpu]
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
 volumes:
   firefly_iii_upload:

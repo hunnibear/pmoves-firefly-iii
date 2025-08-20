@@ -18,10 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+// Variables must be defined before @use rules
 $color-mode-type: media-query;
 $link-decoration: none !default;
 $font-family-sans-serif: "Roboto", sans-serif;
@@ -30,7 +27,7 @@ $danger: #CD5029 !default;
 $primary: #1E6581 !default;
 $success: #64B624 !default;
 
-// admin LTE
+// All @use rules must come first
 @use "admin-lte/src/scss/adminlte" with (
     $color-mode-type: $color-mode-type,
     $link-decoration: $link-decoration,
@@ -49,6 +46,11 @@ $success: #64B624 !default;
 @use '@fortawesome/fontawesome-free/scss/solid.scss' as fa-solid;
 @use '@fortawesome/fontawesome-free/scss/brands.scss' as fa-brands;
 @use '@fortawesome/fontawesome-free/scss/regular.scss' as fa-regular;
+
+// Tailwind directives come after @use rules
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 
 // some local CSS

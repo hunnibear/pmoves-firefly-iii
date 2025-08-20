@@ -1,0 +1,34 @@
+COSTCO WHOLESALE #123
+1234 Shopping Way
+Anytown, CA 90210
+Phone: (555) 987-6543
+
+Member: 123456789
+Date: 08/19/2025    Time: 4:15 PM
+Receipt #: W789012345
+
+GROCERY DEPARTMENT:
+Organic Bananas 3 lbs         $4.99
+Ground Turkey 2 lbs           $8.99
+Olive Oil Extra Virgin        $12.49
+Quinoa Organic 4 lbs          $9.99
+Greek Yogurt 32 oz            $5.99
+
+HOUSEHOLD DEPARTMENT:
+Laundry Pods 81 ct            $19.99
+Paper Towels 12 pack          $24.99
+Dishwasher Detergent          $15.99
+
+HEALTH & BEAUTY:
+Multivitamins 365 ct          $22.99
+Shampoo & Conditioner Set     $18.99
+
+SUBTOTAL:                    $145.39
+TAX (8.25%):                 $12.00
+TOTAL:                       $157.39
+
+PAYMENT METHOD: VISA ****3456
+CASHBACK EARNED: $1.57 (1%)
+
+Thank you for shopping at Costco!
+Your membership saves you money.

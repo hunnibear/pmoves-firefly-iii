@@ -154,18 +154,12 @@ Route::group(
         Route::get('/', ['uses' => 'CouplesController@index', 'as' => 'index']);
         Route::get('/dashboard', ['uses' => 'CouplesController@dashboard', 'as' => 'dashboard']);
         
-        // API endpoints for enhanced functionality
+        // These are kept as web routes for CSRF-protected browser access
         Route::get('/api/state', ['uses' => 'CouplesController@state', 'as' => 'api.state']);
-        
-        // Document processing endpoints
         Route::post('/api/upload-receipt', ['uses' => 'CouplesController@uploadReceipt', 'as' => 'api.upload-receipt']);
         Route::post('/api/process-bank-statement', ['uses' => 'CouplesController@processBankStatement', 'as' => 'api.process-bank-statement']);
-        
-        // Real-time collaboration endpoints
         Route::get('/api/realtime-events', ['uses' => 'CouplesController@getRealtimeEvents', 'as' => 'api.realtime-events']);
         Route::post('/api/broadcast-update', ['uses' => 'CouplesController@broadcastUpdate', 'as' => 'api.broadcast-update']);
-        
-        // Transaction management
         Route::post('/api/transactions', ['uses' => 'CouplesController@storeTransaction', 'as' => 'api.transactions.store']);
     }
 );
@@ -1440,6 +1434,17 @@ Route::group(
         Route::get('notifications', ['uses' => 'NotificationController@index', 'as' => 'notification.index']);
         Route::post('notifications', ['uses' => 'NotificationController@postIndex', 'as' => 'notification.post']);
         Route::post('notifications/test', ['uses' => 'NotificationController@testNotification', 'as' => 'notification.test']);
+
+        // Watch Folder management routes
+        Route::get('watch-folders', ['uses' => 'WatchFolderController@index', 'as' => 'watch-folders.index']);
+        Route::get('watch-folders/create', ['uses' => 'WatchFolderController@create', 'as' => 'watch-folders.create']);
+        Route::post('watch-folders', ['uses' => 'WatchFolderController@store', 'as' => 'watch-folders.store']);
+        Route::get('watch-folders/{watchFolder}/edit', ['uses' => 'WatchFolderController@edit', 'as' => 'watch-folders.edit']);
+        Route::put('watch-folders/{watchFolder}', ['uses' => 'WatchFolderController@update', 'as' => 'watch-folders.update']);
+        Route::delete('watch-folders/{watchFolder}', ['uses' => 'WatchFolderController@destroy', 'as' => 'watch-folders.destroy']);
+        Route::post('watch-folders/test-path', ['uses' => 'WatchFolderController@testPath', 'as' => 'watch-folders.test-path']);
+        Route::post('watch-folders/trigger', ['uses' => 'WatchFolderController@triggerProcessing', 'as' => 'watch-folders.trigger']);
+        Route::get('watch-folders/status', ['uses' => 'WatchFolderController@status', 'as' => 'watch-folders.status']);
     }
 );
 
@@ -1479,5 +1484,43 @@ Route::group(
         Route::post('categorize-transaction', ['uses' => 'DashboardController@categorizeTransaction', 'as' => 'categorize-transaction']);
         Route::get('detect-anomalies', ['uses' => 'DashboardController@detectAnomalies', 'as' => 'detect-anomalies']);
         Route::get('test-log', function() { app(FireflyIII\Services\Internal\AIService::class)->testConnectivity(); return 'Logged!'; });
+    }
+);
+
+/**
+ * Watch Folders Routes
+ */
+Route::group(
+    [
+        'middleware' => ['user_full_auth', 'range'],
+        'namespace'  => 'FireflyIII\Http\Controllers\WatchFolder',
+        'prefix'     => 'watch-folders',
+        'as'         => 'watch-folders.',
+    ],
+    static function (): void {
+        Route::get('/', ['uses' => 'IndexController@index', 'as' => 'index']);
+        Route::get('/upload', ['uses' => 'UploadController@index', 'as' => 'upload']);
+        Route::post('/upload', ['uses' => 'UploadController@upload', 'as' => 'upload.post']);
+        Route::get('/processed', ['uses' => 'ProcessedController@index', 'as' => 'processed']);
+        Route::get('/failed', ['uses' => 'FailedController@index', 'as' => 'failed']);
+        Route::delete('/file/{filename}', ['uses' => 'IndexController@delete', 'as' => 'delete']);
+    }
+);
+
+/**
+ * AI Agent Routes
+ */
+Route::group(
+    [
+        'middleware' => ['user_full_auth', 'range'],
+        'namespace'  => 'FireflyIII\Http\Controllers\AiAgent',
+        'prefix'     => 'ai-agent',
+        'as'         => 'ai-agent.',
+    ],
+    static function (): void {
+        Route::get('/dashboard', ['uses' => 'DashboardController@index', 'as' => 'dashboard']);
+        Route::get('/settings', ['uses' => 'SettingsController@index', 'as' => 'settings']);
+        Route::post('/settings', ['uses' => 'SettingsController@update', 'as' => 'settings.update']);
+        Route::get('/logs', ['uses' => 'LogsController@index', 'as' => 'logs']);
     }
 );

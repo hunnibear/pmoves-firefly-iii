@@ -1,0 +1,34 @@
+========================
+      RESTAURANT RECEIPT
+========================
+Steakhouse Prime
+754 First Avenue
+Date: 2025-08-19
+Time: 15:50:07
+Server: Sarah
+========================
+
+Table 15 - Party of 2
+
+Caesar Salad              $8.95
+Pasta Primavera           $18.95
+Grilled Salmon            $24.95
+House Wine                $8.00
+Craft Beer                $6.50
+
+========================
+Subtotal:              $67.35
+Tax (8.5%):            $5.72
+Tip (18%):             $12.12
+========================
+TOTAL:                 $85.20
+========================
+
+Payment: Credit Card
+Card: ****5619
+Auth: 856944
+
+Thank you! Come back soon!
+Steakhouse Prime
+
+Receipt #: STE-250819-1550

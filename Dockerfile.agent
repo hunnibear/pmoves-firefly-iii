@@ -1,0 +1,51 @@
+# Transaction Intelligence Agent Dockerfile
+FROM python:3.11-slim
+
+LABEL org.opencontainers.image.source="https://github.com/hunnibear/pmoves-firefly-iii"
+LABEL org.opencontainers.image.description="Transaction Intelligence Agent for Firefly III"
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies and uv
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+# Create non-root user
+RUN groupadd -r agent && useradd -r -g agent agent
+
+# Install Python dependencies using uv (much faster than pip)
+RUN uv pip install --system \
+    fastapi>=0.104.0 \
+    uvicorn[standard]>=0.24.0 \
+    pydantic>=2.5.0 \
+    httpx>=0.25.0 \
+    requests>=2.31.0 \
+    python-multipart>=0.0.6
+
+# Copy agent scripts
+COPY ai-scripts/ /app/ai-scripts/
+COPY config/agent.php /app/config/
+
+# Create logs directory
+RUN mkdir -p /app/logs && chown agent:agent /app/logs
+
+# Switch to non-root user
+USER agent
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Set environment variables
+ENV PYTHONPATH=/app/ai-scripts
+ENV PYTHONUNBUFFERED=1
+
+# Run the agent service
+CMD ["uvicorn", "ai-scripts.agent_service:app", "--host", "0.0.0.0", "--port", "8000"]

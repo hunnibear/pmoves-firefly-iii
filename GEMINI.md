@@ -115,3 +115,10 @@ This log details the steps taken to integrate a "Couples Budget Planner" (origin
     *   **Containerized Application:** Main application runs in Docker container with persistent volume storage
     *   **Automated Tasks:** Cron service container handles scheduled maintenance and data processing
     *   **Network Configuration:** All services communicate through dedicated Docker bridge network
+
+### Phase 7: V2 Dashboard Fix
+
+*   **Problem:** The main dashboard was consistently rendering the old `v1` Twig-based layout, even when the `.env` file was configured to use the `v2` layout.
+*   **Root Cause Analysis:** Investigation of `routes/web.php` and `app/Http/Controllers/HomeController.php` revealed that the `HomeController@index` method, while correctly identifying the `v2` configuration, was calling `view('index')`. This caused Laravel to render the default `resources/views/index.twig` instead of the correct `resources/views/v2/index.blade.php`.
+*   **Solution:** The `HomeController.php` was modified to explicitly point to the correct v2 view. The return statement in the `indexV2` method was changed from `return view('index', ...)` to `return view('v2.index', ...)`.
+*   **Verification:** This change ensures that when `FIREFLY_III_LAYOUT=v2` is set, the application correctly serves the new React-based dashboard, resolving the layout issue and enabling the transition to Phase 2 development.

@@ -1,0 +1,34 @@
+========================
+      GROCERY RECEIPT
+========================
+Store: Green Grocer
+Address: 563 Main St
+Date: 2025-08-19
+Time: 15:50:07
+========================
+
+Cheese - Swiss            $5.76
+Olive Oil - Extra Virgin  $10.69
+Bread - Whole Grain       $3.69
+Rice - Brown              $6.42
+Apples - Honeycrisp       $7.57
+Bananas (organic)         $5.85
+Broccoli                  $3.87
+Chicken Breast            $11.71
+
+========================
+Subtotal:              $55.57
+Tax:                   $3.33
+========================
+TOTAL:                 $58.90
+========================
+
+Payment: Credit Card
+Card: ****6912
+Auth: 486747
+
+Thank you for shopping!
+Green Grocer
+Visit us again soon!
+
+Receipt #: GR-250819-1550

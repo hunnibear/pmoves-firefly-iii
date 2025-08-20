@@ -113,6 +113,71 @@
                         </li>
                     </ul>
                 </li>
+                <li class="nav-header">{{ strtoupper(__('firefly.ai_automation'))  }}</li>
+                <li class="nav-item @partialroute('watch-folders') menu-open @endpartialroute">
+                    <a href="#" class="nav-link @partialroute('watch-folders') active @endpartialroute">
+                        <i class="nav-icon fa-solid fa-folder-open"></i>
+                        <p>
+                            {{ __('firefly.watch_folders') }}
+                            <i class="nav-arrow fa-solid fa-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('watch-folders.index') }}" class="nav-link @partialroute('watch-folders', 'index') active @endpartialroute">
+                                <i class="nav-icon fa-solid fa-list"></i>
+                                <p>{{ __('firefly.view_files') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('watch-folders.upload') }}" class="nav-link @partialroute('watch-folders', 'upload') active @endpartialroute">
+                                <i class="nav-icon fa-solid fa-upload"></i>
+                                <p>{{ __('firefly.upload_document') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('watch-folders.processed') }}" class="nav-link @partialroute('watch-folders', 'processed') active @endpartialroute">
+                                <i class="nav-icon fa-solid fa-check-circle"></i>
+                                <p>{{ __('firefly.processed_files') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('watch-folders.failed') }}" class="nav-link @partialroute('watch-folders', 'failed') active @endpartialroute">
+                                <i class="nav-icon fa-solid fa-exclamation-triangle"></i>
+                                <p>{{ __('firefly.failed_files') }}</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item @partialroute('ai-agent') menu-open @endpartialroute">
+                    <a href="#" class="nav-link @partialroute('ai-agent') active @endpartialroute">
+                        <i class="nav-icon fa-solid fa-robot"></i>
+                        <p>
+                            {{ __('firefly.ai_agent') }}
+                            <i class="nav-arrow fa-solid fa-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('ai-agent.dashboard') }}" class="nav-link @partialroute('ai-agent', 'dashboard') active @endpartialroute">
+                                <i class="nav-icon fa-solid fa-gauge-high"></i>
+                                <p>{{ __('firefly.ai_dashboard') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('ai-agent.settings') }}" class="nav-link @partialroute('ai-agent', 'settings') active @endpartialroute">
+                                <i class="nav-icon fa-solid fa-cog"></i>
+                                <p>{{ __('firefly.ai_settings') }}</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('ai-agent.logs') }}" class="nav-link @partialroute('ai-agent', 'logs') active @endpartialroute">
+                                <i class="nav-icon fa-solid fa-file-text"></i>
+                                <p>{{ __('firefly.ai_logs') }}</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="nav-header">{{ strtoupper(__('firefly.others'))  }}</li>
                 <li class="nav-item @partialroute('accounts') menu-open @endpartialroute">
                     <a href="#" class="nav-link @partialroute('accounts') active @endpartialroute">

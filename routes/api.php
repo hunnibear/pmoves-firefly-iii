@@ -284,6 +284,32 @@ Route::group(
     }
 );
 
+// WATCH FOLDER STATUS CONTROLLER
+Route::group(
+    [
+        'middleware' => ['auth:api', 'bindings'],
+        'namespace' => 'FireflyIII\Api\V1\Controllers',
+        'prefix'    => 'v1/watch-folders',
+        'as'        => 'api.v1.watch-folders.',
+    ],
+    static function (): void {
+        Route::get('status', ['uses' => 'WatchFolderStatusController@status', 'as' => 'status']);
+    }
+);
+
+// AI AGENT STATUS CONTROLLER
+Route::group(
+    [
+        'middleware' => ['auth:api', 'bindings'],
+        'namespace' => 'FireflyIII\Api\V1\Controllers',
+        'prefix'    => 'v1/ai-agent',
+        'as'        => 'api.v1.ai-agent.',
+    ],
+    static function (): void {
+        Route::get('status', ['uses' => 'AiAgentStatusController@status', 'as' => 'status']);
+    }
+);
+
 // MODELS
 // Accounts API routes:
 Route::group(
@@ -731,11 +757,12 @@ Route::group(
 Route::group(
     [
         'middleware' => ['auth:api,sanctum', 'bindings'],
-        'namespace' => 'FireflyIII\\Api\\V1\\Controllers\\Couples',
+        'namespace' => 'FireflyIII\\Http\\Controllers',
         'prefix'    => 'v1/couples',
         'as'        => 'api.v1.couples.',
     ],
     static function (): void {
+        Route::get('dashboard', ['uses' => 'CouplesController@dashboardData', 'as' => 'dashboard']);
         Route::get('state', ['uses' => 'CouplesController@state', 'as' => 'state']);
         Route::post('transactions', ['uses' => 'CouplesController@storeTransaction', 'as' => 'transactions.store']);
         Route::put('transactions/{transaction}', ['uses' => 'CouplesController@updateTransaction', 'as' => 'transactions.update']);
@@ -743,6 +770,24 @@ Route::group(
         Route::put('transactions/{transaction}/tag', ['uses' => 'CouplesController@updateTransactionTag', 'as' => 'transactions.update-tag']);
         Route::post('goals', ['uses' => 'CouplesController@storeGoal', 'as' => 'goals.store']);
         Route::delete('goals/{goal}', ['uses' => 'CouplesController@deleteGoal', 'as' => 'goals.delete']);
+        
+                // Enhanced document processing routes with LangExtract AI integration
+        Route::post('upload-receipt', ['uses' => 'CouplesController@uploadReceipt', 'as' => 'upload-receipt']);
+        Route::post('upload-document', ['uses' => 'CouplesController@uploadReceipt', 'as' => 'upload-document']); // Alias for backward compatibility
+        Route::post('process-bank-statement', ['uses' => 'CouplesController@processBankStatement', 'as' => 'process-bank-statement']);
+        Route::post('process-photo', ['uses' => 'CouplesController@processPhoto', 'as' => 'process-photo']);
+        
+        // Watch folder management routes
+        Route::get('watch-folders', ['uses' => 'WatchFolderController@index', 'as' => 'watch-folders.index']);
+        Route::post('watch-folders', ['uses' => 'WatchFolderController@store', 'as' => 'watch-folders.store']);
+        Route::delete('watch-folders', ['uses' => 'WatchFolderController@destroy', 'as' => 'watch-folders.destroy']);
+        Route::post('watch-folders/test-path', ['uses' => 'WatchFolderController@testPath', 'as' => 'watch-folders.test-path']);
+        Route::post('watch-folders/trigger', ['uses' => 'WatchFolderController@triggerProcessing', 'as' => 'watch-folders.trigger']);
+        Route::get('watch-folders/status', ['uses' => 'WatchFolderController@status', 'as' => 'watch-folders.status']);
+        
+        // Realtime collaboration routes
+        Route::get('realtime-events', ['uses' => 'CouplesController@getRealtimeEvents', 'as' => 'realtime-events']);
+        Route::post('broadcast-update', ['uses' => 'CouplesController@broadcastUpdate', 'as' => 'broadcast-update']);
     }
 );
 
@@ -795,31 +840,32 @@ Route::group(
     }
 );
 
-// AI Integration API routes (temporarily disabled):
-/*
+// Transaction Intelligence Agent API routes:
 Route::group(
     [
-        'namespace' => 'App\Http\Controllers\Api\V1',
-        'prefix'    => 'v1/ai',
-        'as'        => 'api.v1.ai.',
-        'middleware' => ['auth:api', 'bindings'],
+        'namespace' => 'FireflyIII\Http\Controllers\Agent',
+        'prefix'    => 'v1/agent',
+        'as'        => 'api.v1.agent.',
+        'middleware' => ['auth:api,sanctum', 'bindings'],
     ],
     static function (): void {
-        // Transaction categorization
-        Route::post('categorize-transaction', ['uses' => 'AIController@categorizeTransaction', 'as' => 'categorize-transaction']);
+        // Agent status and monitoring
+        Route::get('status', ['uses' => 'AgentController@getAgentStatus', 'as' => 'status']);
         
-        // Financial insights
-        Route::get('insights', ['uses' => 'AIController@generateInsights', 'as' => 'insights']);
-        
-        // AI chat assistant
-        Route::post('chat', ['uses' => 'AIController@chat', 'as' => 'chat']);
-        
-        // Anomaly detection
-        Route::get('anomalies', ['uses' => 'AIController@detectAnomalies', 'as' => 'anomalies']);
-        
-        // Service status and testing
-        Route::get('status', ['uses' => 'AIController@getStatus', 'as' => 'status']);
-        Route::get('test-connectivity', ['uses' => 'AIController@testConnectivity', 'as' => 'test-connectivity']);
+        // Manual transaction analysis
+        Route::post('analyze', ['uses' => 'AgentController@triggerManualAnalysis', 'as' => 'analyze']);
     }
 );
-*/
+
+// Webhook endpoints (no auth required for incoming webhooks)
+Route::group(
+    [
+        'namespace' => 'FireflyIII\Http\Controllers\Agent',
+        'prefix'    => 'webhooks',
+        'as'        => 'webhooks.',
+    ],
+    static function (): void {
+        // Firefly III webhook receiver for agent processing
+        Route::post('firefly', ['uses' => 'AgentController@handleFireflyWebhook', 'as' => 'firefly']);
+    }
+);

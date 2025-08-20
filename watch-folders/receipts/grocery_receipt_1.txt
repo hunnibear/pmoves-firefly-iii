@@ -1,0 +1,31 @@
+========================
+      GROCERY RECEIPT
+========================
+Store: Green Grocer
+Address: 858 Main St
+Date: 2025-08-19
+Time: 15:50:07
+========================
+
+Cheese - Swiss            $5.79
+Yogurt - Greek            $7.10
+Chicken Breast            $9.91
+Olive Oil - Extra Virgin  $6.85
+Bananas (organic)         $3.29
+
+========================
+Subtotal:              $32.93
+Tax:                   $1.98
+========================
+TOTAL:                 $34.91
+========================
+
+Payment: Credit Card
+Card: ****3807
+Auth: 143437
+
+Thank you for shopping!
+Green Grocer
+Visit us again soon!
+
+Receipt #: GR-250819-1550

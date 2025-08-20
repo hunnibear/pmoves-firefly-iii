@@ -1,0 +1,136 @@
+{
+  "tests_run": 17,
+  "tests_passed": 13,
+  "tests_failed": 4,
+  "errors": [
+    "Agent Core Functionality: asyncio.run() cannot be called from a running event loop",
+    "Pydantic Model Validation: 2 validation errors for AgentAction\ndata\n  Field required [type=missing, input_value={'type': 'categorize_tran...d'}, 'confidence': 0.95}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nreason\n  Field required [type=missing, input_value={'type': 'categorize_tran...d'}, 'confidence': 0.95}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
+    "FastAPI Health Endpoint: HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000026FB6A029F0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+    "FastAPI Event Processing: HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /api/process-event (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000026FB6A50890>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+  ],
+  "details": [
+    {
+      "test": "Ollama AI Service",
+      "passed": true,
+      "details": "Models: ['gemma3:4b', 'gemma3:270m']",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.201582"
+    },
+    {
+      "test": "Firefly III Container",
+      "passed": true,
+      "details": "Container is healthy",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.291930"
+    },
+    {
+      "test": "Agent Initialization",
+      "passed": true,
+      "details": "Agent created successfully",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.531675"
+    },
+    {
+      "test": "Transaction Model Creation",
+      "passed": true,
+      "details": "Amount: $4.5",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.532685"
+    },
+    {
+      "test": "Event Model Creation",
+      "passed": true,
+      "details": "Type: EventType.TRANSACTION_CREATED",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.533189"
+    },
+    {
+      "test": "Agent Core Functionality",
+      "passed": false,
+      "details": "",
+      "error": "asyncio.run() cannot be called from a running event loop",
+      "timestamp": "2025-08-19T15:37:49.533189"
+    },
+    {
+      "test": "Enum Validation",
+      "passed": true,
+      "details": "Event types: 5, Action types: 6",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.557811"
+    },
+    {
+      "test": "Transaction Validation",
+      "passed": true,
+      "details": "Valid transaction created",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.557811"
+    },
+    {
+      "test": "Pydantic Model Validation",
+      "passed": false,
+      "details": "",
+      "error": "2 validation errors for AgentAction\ndata\n  Field required [type=missing, input_value={'type': 'categorize_tran...d'}, 'confidence': 0.95}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nreason\n  Field required [type=missing, input_value={'type': 'categorize_tran...d'}, 'confidence': 0.95}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
+      "timestamp": "2025-08-19T15:37:49.557811"
+    },
+    {
+      "test": "Agent Configuration File",
+      "passed": true,
+      "details": "Config file exists",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.559311"
+    },
+    {
+      "test": "Agent Job Class",
+      "passed": true,
+      "details": "ProcessAgentEvent job exists",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.559311"
+    },
+    {
+      "test": "Agent Controller",
+      "passed": true,
+      "details": "AgentController exists",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.559311"
+    },
+    {
+      "test": "Agent Dockerfile",
+      "passed": true,
+      "details": "Dockerfile.agent exists",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.559311"
+    },
+    {
+      "test": "Agent Docker Compose",
+      "passed": true,
+      "details": "docker-compose.agent.yml exists",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.559811"
+    },
+    {
+      "test": "Agent Requirements",
+      "passed": true,
+      "details": "Requirements file contains needed packages",
+      "error": null,
+      "timestamp": "2025-08-19T15:37:49.559811"
+    },
+    {
+      "test": "FastAPI Health Endpoint",
+      "passed": false,
+      "details": "",
+      "error": "HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000026FB6A029F0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+      "timestamp": "2025-08-19T15:37:56.666040"
+    },
+    {
+      "test": "FastAPI Event Processing",
+      "passed": false,
+      "details": "",
+      "error": "HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /api/process-event (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000026FB6A50890>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+      "timestamp": "2025-08-19T15:38:00.767971"
+    }
+  ],
+  "success_rate": 76.47058823529412,
+  "phase_status": "MOSTLY_READY",
+  "total_time": 11.574297666549683,
+  "validation_timestamp": "2025-08-19T15:38:00.769980"
+}

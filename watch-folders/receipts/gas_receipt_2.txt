@@ -1,0 +1,27 @@
+========================
+      GAS STATION RECEIPT
+========================
+Chevron Station #1247
+147 Highway Blvd
+Date: 2025-08-19
+Time: 15:50:07
+========================
+
+Pump: 2
+Product: Regular Unleaded
+
+Gallons:               13.415
+Price/Gallon:          $3.551
+
+========================
+TOTAL:                 $47.64
+========================
+
+Payment: Credit Card
+Card: ****3067
+Auth: 324144
+
+Thank you!
+Drive safely!
+
+Receipt #: CH-250819-1550

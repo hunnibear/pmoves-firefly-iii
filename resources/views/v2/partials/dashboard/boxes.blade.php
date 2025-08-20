@@ -183,5 +183,13 @@
         <!--end::Small Box Widget 4-->
     </div>
     <!--end::Col-->
+    
+    <!-- Watch Folder Box -->
+    @include('v2.partials.dashboard.watch-folder-box')
+    <!--end::Col-->
+    
+    <!-- AI Agent Box -->
+    @include('v2.partials.dashboard.ai-agent-box')
+    <!--end::Col-->
 </div>
 <!--end::Row-->

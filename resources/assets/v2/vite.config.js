@@ -20,8 +20,10 @@
 
 import {defineConfig} from 'vite';
 import laravel from 'laravel-vite-plugin';
+import react from '@vitejs/plugin-react';
 import manifestSRI from 'vite-plugin-manifest-sri';
 import * as fs from "fs";
+import path from "path";
 
 const host = '127.0.0.1';
 
@@ -43,6 +45,11 @@ export default defineConfig(({command, mode, isSsrBuild, isPreview}) => {
 
     return {
         base: './',
+        resolve: {
+            alias: {
+                "@": path.resolve(__dirname, "./src"),
+            },
+        },
         build: {
             rollupOptions: {
                 output: {
@@ -51,13 +58,24 @@ export default defineConfig(({command, mode, isSsrBuild, isPreview}) => {
             }
         },
         plugins: [
+            react(),
             laravel({
                 input: [
                     // css
                     'src/sass/app.scss',
+                    'src/css/globals.css',
 
                     // dashboard
-                    'src/pages/dashboard/dashboard.js',
+                    'src/pages/dashboard/dashboard.jsx',
+
+                    // ai agent
+                    'src/pages/ai-agent/dashboard.js',
+
+                    // watch folders
+                    'src/pages/watch-folders/index.js',
+
+                    // couples dashboard
+                    'src/pages/couples/dashboard.jsx',
 
                     // accounts
                     'src/pages/accounts/index.js',

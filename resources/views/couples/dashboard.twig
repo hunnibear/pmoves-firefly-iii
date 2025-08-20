@@ -240,6 +240,133 @@
         </div>
     </div>
 </div>
+
+<!-- Processing Indicator -->
+<div id="processing-indicator" class="alert alert-info position-fixed" style="top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: none;">
+    <i class="fas fa-spinner fa-spin"></i> Processing...
+</div>
+
+<!-- Receipt Review Modal -->
+<div class="modal fade" id="receiptReviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Review Receipt Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Extracted Data</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Merchant</label>
+                            <input type="text" class="form-control" id="extracted-merchant" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Amount</label>
+                            <input type="number" class="form-control" id="extracted-amount" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="extracted-date" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <input type="text" class="form-control" id="extracted-category" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>AI Suggestions</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Suggested Category</label>
+                            <div class="form-control" id="ai-suggested-category">-</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confidence</label>
+                            <div class="form-control" id="ai-confidence">-</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Partner Assignment</label>
+                            <div class="form-control" id="ai-assignment">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="approveReceiptData()">Approve & Add Transaction</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Goals Modal -->
+<div class="modal fade" id="goalsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Couples Goals</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Goals feature coming soon! This will integrate with Firefly III's existing piggy banks and goals system.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Goal Name</label>
+                    <input type="text" class="form-control" placeholder="e.g., Vacation Fund">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Target Amount</label>
+                    <input type="number" class="form-control" placeholder="5000">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Target Date</label>
+                    <input type="date" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Create Goal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Import Type</label>
+                    <select class="form-control">
+                        <option>Bank Statement (CSV)</option>
+                        <option>Bank Statement (PDF)</option>
+                        <option>Receipts (Images)</option>
+                        <option>Firefly III Export</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">File</label>
+                    <input type="file" class="form-control" accept=".csv,.pdf,.jpg,.png,.jpeg">
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Import functionality will process files using the AI system and suggest partner assignments.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Process Import</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -546,28 +673,422 @@ class CouplesEnhancedDashboard {
             default: return 'secondary';
         }
     }
+
+    // Receipt upload functionality
+    async uploadReceipt(file) {
+        try {
+            this.showProcessingIndicator('Processing receipt with AI...');
+            
+            const formData = new FormData();
+            formData.append('receipt', file);
+            
+            const response = await fetch('/couples/upload-receipt', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            // Show extracted data for review
+            this.showExtractedDataReview(result);
+            
+        } catch (error) {
+            console.error('Receipt upload error:', error);
+            this.showError('Failed to process receipt: ' + error.message);
+        } finally {
+            this.hideProcessingIndicator();
+        }
+    }
+
+    // AI Analysis functionality
+    async runAIAnalysis() {
+        try {
+            this.showProcessingIndicator('Running AI analysis...');
+            
+            const response = await fetch('/couples/ai-analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    analysis_type: 'spending_patterns',
+                    date_range: 'last_30_days'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const analysis = await response.json();
+            this.displayAIAnalysis(analysis);
+            
+        } catch (error) {
+            console.error('AI analysis error:', error);
+            this.showError('Failed to run AI analysis: ' + error.message);
+        } finally {
+            this.hideProcessingIndicator();
+        }
+    }
+
+    // Submit transaction from modal
+    async submitTransaction() {
+        try {
+            const formData = new FormData(document.getElementById('addTransactionForm'));
+            
+            const response = await fetch('/couples/transactions', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            // Close modal and refresh data
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addTransactionModal'));
+            modal.hide();
+            
+            // Reset form
+            document.getElementById('addTransactionForm').reset();
+            
+            // Refresh dashboard
+            this.loadCouplesData();
+            
+            this.showSuccess('Transaction added successfully!');
+            
+        } catch (error) {
+            console.error('Transaction submission error:', error);
+            this.showError('Failed to add transaction: ' + error.message);
+        }
+    }
+
+    // Display extracted receipt data for review
+    showExtractedDataReview(data) {
+        // Populate modal with extracted data
+        if (data.extracted_data) {
+            document.getElementById('extracted-merchant').value = data.extracted_data.merchant || '';
+            document.getElementById('extracted-amount').value = data.extracted_data.amount || '';
+            document.getElementById('extracted-date').value = data.extracted_data.date || '';
+            document.getElementById('extracted-category').value = data.extracted_data.category || '';
+        }
+        
+        // Show AI suggestions
+        if (data.ai_suggestions) {
+            document.getElementById('ai-suggested-category').textContent = data.ai_suggestions.category || 'Unknown';
+            document.getElementById('ai-confidence').textContent = (data.ai_suggestions.confidence || 0) + '%';
+            document.getElementById('ai-assignment').textContent = data.ai_suggestions.partner_assignment || 'Unassigned';
+        }
+        
+        // Show review modal
+        const modal = new bootstrap.Modal(document.getElementById('receiptReviewModal'));
+        modal.show();
+    }
+
+    // Display AI analysis results
+    displayAIAnalysis(analysis) {
+        const insightsContainer = document.getElementById('ai-insights');
+        if (!insightsContainer) return;
+        
+        let html = '<div class="row">';
+        
+        if (analysis.spending_patterns) {
+            html += `
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line"></i> Spending Patterns</h5>
+                        </div>
+                        <div class="card-body">
+                            ${analysis.spending_patterns.map(pattern => `
+                                <div class="mb-2">
+                                    <strong>${pattern.category}</strong>: $${pattern.amount}
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" style="width: ${pattern.percentage}%"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (analysis.recommendations) {
+            html += `
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-lightbulb"></i> AI Recommendations</h5>
+                        </div>
+                        <div class="card-body">
+                            ${analysis.recommendations.map(rec => `
+                                <div class="alert alert-info">
+                                    <strong>${rec.title}</strong><br>
+                                    ${rec.description}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        insightsContainer.innerHTML = html;
+    }
+
+    // UI Helper methods
+    showProcessingIndicator(message) {
+        const indicator = document.getElementById('processing-indicator');
+        if (indicator) {
+            indicator.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${message}`;
+            indicator.style.display = 'block';
+        }
+    }
+
+    hideProcessingIndicator() {
+        const indicator = document.getElementById('processing-indicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+
+    showSuccess(message) {
+        this.showNotification(message, 'success');
+    }
+
+    showError(message) {
+        this.showNotification(message, 'danger');
+    }
+
+    showNotification(message, type) {
+        // Create toast notification
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+
+    // Create transaction from receipt data
+    async createTransactionFromReceipt(receiptData) {
+        try {
+            this.showProcessingIndicator('Creating transaction...');
+            
+            const transactionData = {
+                description: receiptData.merchant,
+                amount: receiptData.amount,
+                date: receiptData.date,
+                category: receiptData.category || receiptData.ai_category,
+                partner_assignment: receiptData.partner_assignment,
+                source: 'receipt_upload',
+                ai_confidence: receiptData.confidence || null
+            };
+            
+            const response = await fetch('/couples/transactions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(transactionData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            // Refresh dashboard
+            this.loadCouplesData();
+            
+            this.showSuccess('Transaction created successfully from receipt!');
+            
+        } catch (error) {
+            console.error('Create transaction error:', error);
+            this.showError('Failed to create transaction: ' + error.message);
+        } finally {
+            this.hideProcessingIndicator();
+        }
+    }
 }
 
 // Global functions for UI interactions
 function openAddTransactionModal() {
-    const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
-    modal.show();
+    try {
+        const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Error opening add transaction modal:', error);
+        alert('Please wait for the page to fully load before trying again.');
+    }
 }
 
 function openReceiptUpload() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*,application/pdf';
-    fileInput.onchange = async (e) => {
-        if (e.target.files.length > 0) {
-            await window.couplesApp.uploadReceipt(e.target.files[0]);
-        }
-    };
-    fileInput.click();
+    try {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*,application/pdf';
+        fileInput.onchange = async (e) => {
+            if (e.target.files.length > 0) {
+                if (window.couplesApp && typeof window.couplesApp.uploadReceipt === 'function') {
+                    await window.couplesApp.uploadReceipt(e.target.files[0]);
+                } else {
+                    alert('Please wait for the page to fully load before uploading receipts.');
+                }
+            }
+        };
+        fileInput.click();
+    } catch (error) {
+        console.error('Error opening receipt upload:', error);
+        alert('Please wait for the page to fully load before trying again.');
+    }
 }
 
 function runAIAnalysis() {
-    // Open existing AI dashboard with couples context
+    try {
+        if (window.couplesApp && typeof window.couplesApp.runAIAnalysis === 'function') {
+            window.couplesApp.runAIAnalysis();
+        } else {
+            alert('Please wait for the page to fully load before running AI analysis.');
+        }
+    } catch (error) {
+        console.error('Error running AI analysis:', error);
+        alert('AI analysis is not available right now. Please try again later.');
+    }
+}
+
+function openGoalsModal() {
+    try {
+        const modal = new bootstrap.Modal(document.getElementById('goalsModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Error opening goals modal:', error);
+        alert('Please wait for the page to fully load before trying again.');
+    }
+}
+
+function openImportModal() {
+    try {
+        const modal = new bootstrap.Modal(document.getElementById('importModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Error opening import modal:', error);
+        alert('Please wait for the page to fully load before trying again.');
+    }
+}
+
+function refreshTransactions() {
+    try {
+        if (window.couplesApp && typeof window.couplesApp.loadCouplesData === 'function') {
+            window.couplesApp.loadCouplesData();
+        } else {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error refreshing transactions:', error);
+        window.location.reload();
+    }
+}
+
+function viewAllTransactions() {
+    try {
+        window.location.href = '/couples/transactions';
+    } catch (error) {
+        console.error('Error viewing all transactions:', error);
+    }
+}
+
+function submitTransaction() {
+    try {
+        if (window.couplesApp && typeof window.couplesApp.submitTransaction === 'function') {
+            window.couplesApp.submitTransaction();
+        } else {
+            alert('Please wait for the page to fully load before submitting transactions.');
+        }
+    } catch (error) {
+        console.error('Error submitting transaction:', error);
+        alert('Failed to submit transaction. Please try again.');
+    }
+}
+
+function selectAICategory(categoryId, categoryName) {
+    try {
+        const categoryInput = document.getElementById('ai-category-input');
+        const categoryDisplay = document.getElementById('ai-category-display');
+        
+        if (categoryInput) categoryInput.value = categoryId;
+        if (categoryDisplay) categoryDisplay.textContent = categoryName;
+        
+        // Close category selection modal if open
+        const modalElement = document.getElementById('aiCategoryModal');
+        if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+        }
+    } catch (error) {
+        console.error('Error selecting AI category:', error);
+    }
+}
+
+function approveReceiptData() {
+    try {
+        // Get extracted data and create transaction
+        const receiptData = {
+            merchant: document.getElementById('extracted-merchant')?.value || '',
+            amount: document.getElementById('extracted-amount')?.value || '',
+            date: document.getElementById('extracted-date')?.value || '',
+            category: document.getElementById('extracted-category')?.value || '',
+            ai_category: document.getElementById('ai-suggested-category')?.textContent || '',
+            partner_assignment: document.getElementById('ai-assignment')?.textContent || ''
+        };
+        
+        // Create transaction from receipt data
+        if (window.couplesApp && typeof window.couplesApp.createTransactionFromReceipt === 'function') {
+            window.couplesApp.createTransactionFromReceipt(receiptData);
+        } else {
+            console.error('CouplesApp not ready');
+            alert('Please wait for the page to fully load before approving receipt data.');
+            return;
+        }
+        
+        // Close modal
+        const modalElement = document.getElementById('receiptReviewModal');
+        if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+        }
+    } catch (error) {
+        console.error('Error approving receipt data:', error);
+        alert('Failed to approve receipt data. Please try again.');
+    }
+}
     window.open('/ai?context=couples', '_blank');
 }
 
@@ -639,9 +1160,37 @@ async function submitTransaction() {
     }
 }
 
-// Initialize enhanced dashboard
+// Initialize enhanced dashboard with error handling
 document.addEventListener('DOMContentLoaded', () => {
-    window.couplesApp = new CouplesEnhancedDashboard();
+    try {
+        console.log('Initializing Couples Enhanced Dashboard...');
+        window.couplesApp = new CouplesEnhancedDashboard();
+        console.log('Couples Enhanced Dashboard initialized successfully');
+        
+        // Make functions globally available for debugging
+        window.debugCouplesApp = {
+            openAddTransactionModal,
+            openReceiptUpload, 
+            runAIAnalysis,
+            openGoalsModal,
+            openImportModal,
+            refreshTransactions,
+            viewAllTransactions,
+            submitTransaction,
+            selectAICategory,
+            approveReceiptData
+        };
+        
+    } catch (error) {
+        console.error('Failed to initialize Couples Enhanced Dashboard:', error);
+        
+        // Fallback initialization - basic functionality only
+        window.couplesApp = {
+            showError: (message) => alert('Error: ' + message),
+            showSuccess: (message) => alert('Success: ' + message),
+            showNotification: (message, type) => alert(message)
+        };
+    }
 });
 </script>
 

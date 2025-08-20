@@ -1,0 +1,92 @@
+Date,Description,Amount,Category,Partner
+2025-07-20,Online Purchase - Monthly,-16.56,Shopping,Sam
+2025-07-20,Therapy - Emergency,-263.67,Health & Fitness,Sam
+2025-07-20,Amazon Purchase,-249.42,Shopping,Sam
+2025-07-20,Gas Station - Monthly,-79.84,Transportation,Sam
+2025-07-20,Online Purchase Purchase,-132.8,Shopping,Sam
+2025-07-21,Car Service - Monthly,-12.39,Transportation,Joint
+2025-07-21,Gym Purchase,-168.22,Health & Fitness,Sam
+2025-07-21,Repairs - Monthly,-164.64,Home Improvement,Sam
+2025-07-22,Therapy Purchase,-65.28,Health & Fitness,Alex
+2025-07-22,Taxi - Monthly,-11.31,Transportation,Sam
+2025-07-22,Amazon - Monthly,-113.1,Shopping,Sam
+2025-07-22,Organic Supermarket,-241.19,Groceries,Sam
+2025-07-23,Repairs Purchase,-314.14,Home Improvement,Joint
+2025-07-23,Parking - Emergency,-29.21,Transportation,Sam
+2025-07-23,Games - Emergency,-32.49,Entertainment,Joint
+2025-07-23,Appliances Purchase,-136.23,Home Improvement,Sam
+2025-07-23,Online Purchase - Monthly,-194.3,Shopping,Alex
+2025-07-24,Electric - Monthly,-232.69,Bills & Utilities,Sam
+2025-07-24,Doctor Service,-140.85,Health & Fitness,Joint
+2025-07-24,Therapy - Emergency,-213.08,Health & Fitness,Alex
+2025-07-24,Games Purchase,-113.77,Entertainment,Alex
+2025-07-25,Coffee Shop - Lunch,-27.03,Food & Dining,Alex
+2025-07-25,Electric - Monthly,-306.47,Bills & Utilities,Sam
+2025-07-25,Electric - Emergency,-55.21,Bills & Utilities,Joint
+2025-07-26,Restaurant - Lunch,-115.85,Food & Dining,Alex
+2025-07-27,Gas Station - Emergency,-37.46,Transportation,Sam
+2025-07-27,Appliances - Monthly,-61.64,Home Improvement,Joint
+2025-07-28,Vet - Monthly,-37.97,Pet Care,Sam
+2025-07-28,Organic Market - Weekly Shop,-119.65,Groceries,Joint
+2025-07-28,Books Purchase,-91.21,Entertainment,Joint
+2025-07-28,Water Service,-244.07,Bills & Utilities,Joint
+2025-07-29,Amazon - Monthly,-97.72,Shopping,Joint
+2025-07-29,Department Store Service,-290.48,Shopping,Alex
+2025-07-29,Electric - Emergency,-51.02,Bills & Utilities,Sam
+2025-07-29,Electric - Monthly,-226.15,Bills & Utilities,Alex
+2025-07-29,Car Service - Monthly,-38.46,Transportation,Alex
+2025-07-30,Amazon - Emergency,-297.1,Shopping,Sam
+2025-07-30,Supermarket - Bulk Buy,-61.91,Groceries,Joint
+2025-07-31,Hotel - Emergency,-1809.26,Travel,Sam
+2025-07-31,Phone - Emergency,-61.64,Bills & Utilities,Joint
+2025-07-31,Gym - Emergency,-190.86,Health & Fitness,Sam
+2025-07-31,Vet - Emergency,-109.95,Pet Care,Joint
+2025-08-01,Online Purchase - Emergency,-62.66,Shopping,Sam
+2025-08-02,Internet Purchase,-227.72,Bills & Utilities,Sam
+2025-08-02,Movies Purchase,-30.56,Entertainment,Sam
+2025-08-02,Amazon - Emergency,-81.42,Shopping,Alex
+2025-08-02,Vet - Monthly,-46.99,Pet Care,Sam
+2025-08-02,Pharmacy - Emergency,-54.18,Health & Fitness,Joint
+2025-08-03,Travel Insurance Service,-1670.33,Travel,Joint
+2025-08-03,Boutique - Monthly,-187.53,Shopping,Sam
+2025-08-04,Supermarket - Bulk Buy,-97.39,Groceries,Sam
+2025-08-04,Travel Insurance Purchase,-595.33,Travel,Joint
+2025-08-04,Amazon - Emergency,-75.8,Shopping,Joint
+2025-08-05,Car Rental Purchase,-181.87,Travel,Joint
+2025-08-05,Hardware Store Service,-139.49,Home Improvement,Joint
+2025-08-06,Appliances - Emergency,-173.58,Home Improvement,Joint
+2025-08-06,Boutique Service,-67.65,Shopping,Joint
+2025-08-07,Delivery - Date Night,-119.65,Food & Dining,Sam
+2025-08-08,Internet Purchase,-72.44,Bills & Utilities,Joint
+2025-08-08,Doctor Purchase,-163.63,Health & Fitness,Joint
+2025-08-09,Online Purchase Purchase,-41.03,Shopping,Sam
+2025-08-10,Organic Farmers Market,-164.94,Groceries,Alex
+2025-08-10,Phone - Monthly,-145.44,Bills & Utilities,Alex
+2025-08-10,Parking Service,-59.41,Transportation,Sam
+2025-08-10,Grooming - Monthly,-93.13,Pet Care,Joint
+2025-08-10,Water Service,-349.12,Bills & Utilities,Joint
+2025-08-11,Gym Purchase,-84.59,Health & Fitness,Joint
+2025-08-11,Department Store Purchase,-16.43,Shopping,Alex
+2025-08-11,Gas Station Service,-7.58,Transportation,Sam
+2025-08-11,Concert Purchase,-47.68,Entertainment,Alex
+2025-08-12,Phone - Emergency,-385.32,Bills & Utilities,Alex
+2025-08-12,Car Service - Monthly,-23.59,Transportation,Alex
+2025-08-13,Restaurant #1234,-37.68,Food & Dining,Sam
+2025-08-13,Travel Insurance - Emergency,-1474.24,Travel,Alex
+2025-08-13,Books - Emergency,-124.94,Entertainment,Joint
+2025-08-14,Flight Service,-1467.91,Travel,Sam
+2025-08-14,Boutique - Monthly,-55.31,Shopping,Joint
+2025-08-14,Car Rental Purchase,-921.04,Travel,Joint
+2025-08-14,Doctor Service,-278.87,Health & Fitness,Joint
+2025-08-15,Vet - Emergency,-131.74,Pet Care,Sam
+2025-08-16,Pet Store - Monthly,-43.3,Pet Care,Sam
+2025-08-16,Phone - Emergency,-356.83,Bills & Utilities,Sam
+2025-08-16,Streaming Service,-53.57,Entertainment,Joint
+2025-08-16,Boutique - Emergency,-120.64,Shopping,Joint
+2025-08-16,Organic Organic Market,-204.37,Groceries,Alex
+2025-08-17,Books - Monthly,-52.19,Entertainment,Alex
+2025-08-17,Doctor - Monthly,-45.98,Health & Fitness,Sam
+2025-08-18,Pet Store - Emergency,-149.64,Pet Care,Sam
+2025-08-18,Travel Insurance - Emergency,-771.75,Travel,Sam
+2025-08-18,Therapy - Monthly,-83.89,Health & Fitness,Joint
+2025-08-18,Movies - Monthly,-110.11,Entertainment,Sam

@@ -1,0 +1,285 @@
+# Docker Compose for AI Integration with Ollama GPU Support
+
+networks:
+  firefly_iii:
+    driver: bridge
+  ai_network:
+    driver: bridge
+
+volumes:
+  firefly_iii_upload:
+  redis_data:
+  ollama_data:
+
+services:
+  # Ollama AI Service with GPU Support
+  ollama:
+    image: ollama/ollama:latest
+    hostname: ollama
+    container_name: firefly_ollama
+    restart: unless-stopped
+    networks:
+      - ai_network
+      - firefly_iii
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./ollama-models:/models  # For model persistence
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Alternative for older docker-compose versions:
+    # runtime: nvidia
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all
+    command: serve
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Model Initialization Service
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: firefly_ollama_init
+    networks:
+      - ai_network
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: |
+      /bin/bash -c "
+      echo 'Waiting for Ollama to be ready...'
+      sleep 10
+      echo 'Pulling required models...'
+      ollama pull gemma3:12b
+      ollama pull gemma3:270m
+      ollama pull mistral-small3.2:24b
+      echo 'Models pulled successfully'
+      "
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  # Firefly III Application with AI Integration
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    hostname: app
+    container_name: firefly_iii_core_ai
+    restart: always
+    networks:
+      - firefly_iii
+      - ai_network
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+      - ./storage/logs:/var/www/html/storage/logs
+      # Mount custom code
+      - ./app:/var/www/html/app
+      - ./resources:/var/www/html/resources
+      - ./routes:/var/www/html/routes
+      - ./config:/var/www/html/config
+    env_file: .env.local
+    environment:
+      # Core Application Settings
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-true}
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL}
+      - SITE_OWNER=${SITE_OWNER}
+      - DEFAULT_LANGUAGE=en_US
+      - DEFAULT_LOCALE=en_US
+      - DEFAULT_CURRENCY=USD
+      - TZ=America/New_York
+      - TRUSTED_PROXIES=**
+      
+      # Redis Settings
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_CACHE_DB=1
+      
+      # Queue Settings
+      - QUEUE_DRIVER=redis
+      - REDIS_SCHEME=tcp
+      
+      # AI Integration Settings
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - AI_DEFAULT_MODEL=gemma3:12b
+      - LANGEXTRACT_MODEL=gemma3:270m
+      - LANGEXTRACT_BASE_URL=http://ollama:11434
+      - LANGEXTRACT_PROVIDER=ollama
+      - LANGEXTRACT_ENABLED=true
+      
+      # External AI API Keys (optional)
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      
+      # Python Configuration
+      - PYTHON_PATH=/usr/bin/python3
+      - LANGEXTRACT_PYTHON_ENABLED=true
+      
+      # Security Settings
+      - DISABLE_FRAME_HEADER=false
+      - ALLOW_WEBHOOKS=true
+      
+      # Logging
+      - LOG_CHANNEL=stack
+      - APP_LOG_LEVEL=debug
+      - AUDIT_LOG_LEVEL=info
+      
+    depends_on:
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    container_name: firefly_iii_redis_ai
+    restart: always
+    networks:
+      - firefly_iii
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Processing Worker
+  ai-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    hostname: ai-worker
+    restart: always
+    networks:
+      - firefly_iii
+      - ai_network
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+      - ./storage/logs:/var/www/html/storage/logs
+    env_file: .env.local
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - APP_DEBUG=${APP_DEBUG:-true}
+      - APP_KEY=${APP_KEY}
+      
+      # Redis Settings
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QUEUE_DRIVER=redis
+      
+      # AI Settings
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - AI_DEFAULT_MODEL=gemma3:12b
+      - LANGEXTRACT_MODEL=gemma3:270m
+      - LANGEXTRACT_BASE_URL=http://ollama:11434
+      - LANGEXTRACT_ENABLED=true
+      - PYTHON_PATH=/usr/bin/python3
+      
+      # External AI API Keys
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      
+    depends_on:
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    command: php artisan queue:work --queue=ai-processing,langextract,receipts,default --tries=3 --timeout=600 --memory=512
+
+  # Scheduler for periodic tasks
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    hostname: cron
+    container_name: firefly_iii_cron_ai
+    restart: always
+    networks:
+      - firefly_iii
+      - ai_network
+    volumes:
+      - firefly_iii_upload:/var/www/html/storage/upload
+    env_file: .env.local
+    environment:
+      - APP_ENV=${APP_ENV:-local}
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - STATIC_CRON_TOKEN=${STATIC_CRON_TOKEN}
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      app:
+        condition: service_healthy
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+
+  # Nginx Reverse Proxy with AI endpoints
+  nginx:
+    image: nginx:alpine
+    hostname: nginx
+    container_name: firefly_iii_nginx_ai
+    restart: always
+    networks:
+      - firefly_iii
+      - ai_network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx_ai.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      app:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

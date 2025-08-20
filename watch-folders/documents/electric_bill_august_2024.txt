@@ -1,0 +1,42 @@
+========================
+     ELECTRIC BILL
+========================
+Metro Power Company
+404 Industrial Blvd
+Customer Service: 1-800-POWER-1
+========================
+
+BILL SUMMARY
+Account: 403822219
+Service Address: 429 Pine Street
+Billing Period: Jul 20 - Aug 19, 2025
+
+Previous Balance:       $148.83
+Payment Received:      -$176.50
+Balance Forward:        $0.00
+
+CURRENT CHARGES
+Electric Service Charge: $25.00
+Energy Usage (841 kWh): $122.69
+  Rate: $0.146 per kWh
+Delivery Charges:       $18.32
+Taxes & Fees:          $14.33
+
+========================
+TOTAL AMOUNT DUE:      $180.34
+========================
+
+DUE DATE: September 13, 2025
+
+Payment Options:
+- Online: www.metropower.com
+- Phone: 1-800-PAY-BILL
+- Mail: P.O. Box 12345
+
+Late Payment Fee: $25.00
+Disconnect Notice: 10 days
+
+Thank you for your business!
+
+Account #: 532301628
+Bill Date: August 19, 2025

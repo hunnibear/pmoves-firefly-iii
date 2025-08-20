@@ -1,0 +1,34 @@
+========================
+      GROCERY RECEIPT
+========================
+Store: Organic Foods
+Address: 127 Main St
+Date: 2025-08-19
+Time: 15:50:07
+========================
+
+Rice - Brown              $9.08
+Apples - Honeycrisp       $4.83
+Olive Oil - Extra Virgin  $11.31
+Milk - 2% Gallon          $4.77
+Bananas (organic)         $3.76
+Bread - Whole Grain       $6.30
+Cheese - Swiss            $6.74
+Chicken Breast            $8.32
+
+========================
+Subtotal:              $55.09
+Tax:                   $3.31
+========================
+TOTAL:                 $58.40
+========================
+
+Payment: Credit Card
+Card: ****9604
+Auth: 784017
+
+Thank you for shopping!
+Organic Foods
+Visit us again soon!
+
+Receipt #: OR-250819-1550

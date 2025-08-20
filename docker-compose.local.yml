@@ -73,6 +73,10 @@ services:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
       - OPENAI_COMPATIBLE_BASE_URL=http://lm-studio:1234/v1
       
+      # Transaction Intelligence Agent
+      - AI_AGENT_URL=http://firefly-agent:8000
+      - AI_AGENT_ENABLED=true
+      
       # Supabase Integration
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
@@ -182,3 +186,37 @@ services:
       - app
     ports:
       - "8081:8080"  # Data Importer web interface
+
+  # Transaction Intelligence Agent (FastAPI Service)
+  firefly-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    hostname: firefly-agent
+    container_name: firefly_iii_agent
+    restart: always
+    networks:
+      - firefly_iii
+    volumes:
+      - ./watch-folders:/app/watch-folders
+      - ./ai-logs:/app/logs
+    environment:
+      - FIREFLY_URL=http://app:8080
+      - FIREFLY_TOKEN=${FIREFLY_API_TOKEN:-your-token-here}
+      - AI_SERVICE_URL=${AI_SERVICE_URL:-http://localhost:8000}
+      - WATCH_FOLDER_PATH=/app/watch-folders
+      - LOG_LEVEL=DEBUG
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - app
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

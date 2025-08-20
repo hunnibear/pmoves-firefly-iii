@@ -1,0 +1,47 @@
+========================
+      RESTAURANT RECEIPT
+========================
+Giuseppe's Italian Bistro
+456 Oak Avenue
+Date: 2024-08-18
+Time: 19:45:33
+Server: Maria
+========================
+
+Table 12 - Party of 2
+
+Appetizers:
+Bruschetta              $8.95
+Caesar Salad (2)        $14.90
+
+Entrees:
+Chicken Parmigiana      $18.95
+Fettuccine Alfredo      $16.95
+
+Beverages:
+House Wine (2 glasses)  $16.00
+Sparkling Water         $3.50
+
+Dessert:
+Tiramisu                $7.95
+
+========================
+Subtotal:              $87.20
+Tax (8.5%):            $7.41
+========================
+TOTAL:                 $94.61
+========================
+
+Tip (18%):             $17.03
+========================
+GRAND TOTAL:           $111.64
+========================
+
+Payment: Credit Card
+Card: ****5678
+Auth: 123456
+
+Grazie! Come back soon!
+Giuseppe's Italian Bistro
+
+Receipt #: GIB-240818-1945

@@ -1,0 +1,36 @@
+========================
+      GROCERY RECEIPT
+========================
+Store: Fresh Market Plus
+Address: 123 Main St
+Date: 2024-08-19
+Time: 14:30:22
+========================
+
+Bananas (2 lbs)         $3.98
+Bread - Whole Wheat     $4.29
+Milk - Organic Gallon   $5.49
+Chicken Breast (2 lbs)  $12.98
+Broccoli                $2.87
+Cheese - Cheddar        $6.75
+Yogurt - Greek (6 pack) $8.99
+Apples (3 lbs)          $5.47
+Rice - Jasmine 5lb      $7.99
+Olive Oil               $9.87
+
+========================
+Subtotal:              $68.68
+Tax:                   $4.12
+========================
+TOTAL:                 $72.80
+========================
+
+Payment: Credit Card
+Card: ****1234
+Auth: 987654
+
+Thank you for shopping!
+Fresh Market Plus
+Visit us again soon!
+
+Receipt #: FM-240819-1430

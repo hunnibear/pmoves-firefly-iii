@@ -107,6 +107,10 @@ return [
     'demo_password'                => env('DEMO_PASSWORD', ''),
     'tracker_site_id'              => env('TRACKER_SITE_ID', ''),
     'tracker_url'                  => env('TRACKER_URL', ''),
+    
+    // AI agent settings
+    'ai_agent_url'                 => env('AI_AGENT_URL', 'http://firefly-agent:8000'),
+    'ai_agent_enabled'             => env('AI_AGENT_ENABLED', true),
 
     // authentication settings
     'authentication_guard'         => envNonEmpty('AUTHENTICATION_GUARD', 'web'),

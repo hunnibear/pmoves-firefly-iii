@@ -21,6 +21,8 @@
 import '../../boot/bootstrap.js';
 import dates from '../../pages/shared/dates.js';
 import boxes from './boxes.js';
+import watchFolderBox from './watch-folder-box.js';
+import aiAgentBox from './ai-agent-box.js';
 import accounts from './accounts.js';
 import budgets from './budgets.js';
 import categories from './categories.js';
@@ -89,6 +91,8 @@ const comps = {
     index,
     dates,
     boxes,
+    watchFolderBox,
+    aiAgentBox,
     accounts,
     budgets,
     categories,

@@ -194,6 +194,6 @@ class HomeController extends Controller
         $user      = auth()->user();
         event(new RequestedVersionCheckStatus($user));
 
-        return view('index', compact('subTitle', 'start', 'end', 'pageTitle'));
+        return view('v2.index', compact('subTitle', 'start', 'end', 'pageTitle'));
     }
 }

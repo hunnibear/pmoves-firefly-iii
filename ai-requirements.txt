@@ -1,0 +1,55 @@
+# AI Environment Requir# Data processing
+python-dateutil>=2.8.2
+pydantic>=2.5.0,<3.0.0
+jsonschema>=4.0.0ts - Updated for Agent Services
+# Generated from successful Docker build on August 19, 2025
+# Enhanced with FastAPI and agent service dependencies
+
+# Core dependencies (installed in /opt/ai-env)
+pip==25.2
+setuptools==80.9.0
+wheel==0.45.1
+
+# FastAPI and web service dependencies for Agent API
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# AI and LLM packages
+requests>=2.31.0
+numpy>=1.24.0
+langextract>=1.0.8
+ollama>=0.1.0
+openai>=1.3.0
+anthropic>=0.7.0
+google-generativeai>=0.3.0
+
+# Data processing
+python-dateutil==2.8.0
+pydantic>=2.5.0,<3.0.0
+jsonschema==4.0.0
+
+# HTTP and async (upgraded for agent service)
+httpx>=0.25.0
+asyncio-mqtt==0.13.0
+
+# Agent service enhancements
+scikit-learn>=1.3.0  # For pattern recognition and anomaly detection
+pandas>=2.1.0  # For data analysis and metrics
+redis>=5.0.0  # For caching and session management
+
+# Dependencies of the above packages (installed automatically)
+# Listed here for reference and reproducibility
+aiohttp>=3.8.0
+certifi>=2023.0.0
+charset-normalizer>=3.0.0
+idna>=3.0
+urllib3>=2.0.0
+typing-extensions>=4.5.0
+annotated-types>=0.4.0
+
+# System compatibility notes:
+# - Built for Python 3.11 on Debian 12 (bookworm)
+# - Compatible with ARM64 and AMD64 architectures
+# - Includes system packages: build-essential, python3-dev, git
+# - OpenCV and image processing libraries available via system packages

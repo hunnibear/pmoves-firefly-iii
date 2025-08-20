@@ -1,0 +1,33 @@
+========================
+      GROCERY RECEIPT
+========================
+Store: Organic Foods
+Address: 161 Main St
+Date: 2025-08-19
+Time: 15:50:07
+========================
+
+Bread - Whole Grain       $5.43
+Chicken Breast            $14.20
+Cheese - Swiss            $4.72
+Yogurt - Greek            $4.91
+Olive Oil - Extra Virgin  $7.10
+Broccoli                  $2.73
+Bananas (organic)         $5.21
+
+========================
+Subtotal:              $44.30
+Tax:                   $2.66
+========================
+TOTAL:                 $46.96
+========================
+
+Payment: Credit Card
+Card: ****5625
+Auth: 620293
+
+Thank you for shopping!
+Organic Foods
+Visit us again soon!
+
+Receipt #: OR-250819-1550
