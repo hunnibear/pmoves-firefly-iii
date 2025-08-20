@@ -7,5 +7,5 @@
 
 @section('scripts')
     {{-- This loads the compiled React code. --}}
-    @vite(['resources/assets/v2/src/pages/dashboard/dashboard.jsx'])
+    @vite(['src/pages/dashboard/dashboard.js'])
 @endsection

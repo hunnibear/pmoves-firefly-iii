@@ -7,5 +7,5 @@
 
 @section('scripts')
     {{-- Load the compiled AI dashboard bundle --}}
-    @vite(['resources/assets/v2/src/pages/ai-agent/dashboard.js'])
+    @vite(['src/pages/ai-agent/dashboard.js'])
 @endsection

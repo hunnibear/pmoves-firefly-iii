@@ -47,8 +47,14 @@ class IndexController extends Controller
                 return $next($request);
             }
         );
+        // If the exchange rates feature is disabled, register a middleware that
+        // will return a 404 when the controller is actually invoked at request time.
+        // Throwing here in the constructor breaks artisan route:list and other
+        // tooling because controllers are instantiated during route registration.
         if (false === config('cer.enabled')) {
-            throw new NotFoundHttpException();
+            $this->middleware(function ($request, $next) {
+                throw new NotFoundHttpException();
+            });
         }
     }
 

@@ -18,12 +18,12 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-declare(strict_types=1);
-
-use Illuminate\Support\Facades\Route;
-
-if (!defined('DATEFORMAT')) {
+    [
+        'middleware' => ['user-full-auth'],
+        'namespace'  => 'FireflyIII\\Http\\Controllers\\AI',
+        'prefix'     => 'ai-agent',
+        'as'         => 'ai-agent.',
+    ],
     define('DATEFORMAT', '(19|20)[0-9]{2}-?[0-9]{2}-?[0-9]{2}');
 }
 
@@ -1492,7 +1492,7 @@ Route::group(
  */
 Route::group(
     [
-        'middleware' => ['user_full_auth', 'range'],
+        'middleware' => ['user-full-auth'],
         'namespace'  => 'FireflyIII\Http\Controllers\WatchFolder',
         'prefix'     => 'watch-folders',
         'as'         => 'watch-folders.',
@@ -1512,8 +1512,8 @@ Route::group(
  */
 Route::group(
     [
-        'middleware' => ['user_full_auth', 'range'],
-        'namespace'  => 'FireflyIII\Http\Controllers\AiAgent',
+        'middleware' => ['user-full-auth'],
+        'namespace'  => 'FireflyIII\Http\Controllers\AI',
         'prefix'     => 'ai-agent',
         'as'         => 'ai-agent.',
     ],

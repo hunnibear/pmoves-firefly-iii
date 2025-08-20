@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <base href="{{ route('index') }}/"/>
+    {{-- route('index') was not guaranteed to exist; use url('/') as a safe fallback for base href --}}
+    <base href="{{ url('/') }}/"/>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>@yield('status_code') @yield('status') - Firefly III</title>

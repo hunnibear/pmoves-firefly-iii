@@ -7,5 +7,5 @@
 
 @section('scripts')
     {{-- Load the compiled couples dashboard bundle --}}
-    @vite(['resources/assets/v2/src/pages/couples/dashboard.jsx'])
+    @vite(['src/pages/couples/dashboard.jsx'])
 @endsection
