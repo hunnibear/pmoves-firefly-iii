@@ -37,6 +37,12 @@ class CouplesController extends Controller
      */
     public function dashboard()
     {
+        // Return the v2 couples dashboard when the layout env is set to 'v2'.
+        // This keeps the legacy view intact and makes the switch reversible.
+        if (env('FIREFLY_III_LAYOUT') === 'v2') {
+            return view('v2.couples.dashboard');
+        }
+
         return view('couples.dashboard');
     }
 

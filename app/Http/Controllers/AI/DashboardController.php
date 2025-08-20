@@ -44,6 +44,11 @@ class DashboardController extends Controller
      */
     public function index(): View
     {
+        // Serve the v2 AI dashboard if the environment indicates v2 layout.
+        if (env('FIREFLY_III_LAYOUT') === 'v2') {
+            return view('v2.ai.dashboard');
+        }
+
         return view('ai.dashboard');
     }
 
