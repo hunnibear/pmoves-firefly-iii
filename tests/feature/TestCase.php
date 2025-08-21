@@ -25,20 +25,19 @@ declare(strict_types=1);
 namespace Tests\feature;
 
 use FireflyIII\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Tests\Traits\CreatesUniqueUsers;
 
 abstract class TestCase extends BaseTestCase
 {
+    use RefreshDatabase;
+    use CreatesUniqueUsers;
+
     protected $seed = true;
 
     protected function createUser(): User
     {
-        return User::create(
-            [
-                'email'    => 'james@firefly',
-                'password' => 'secret',
-            ]
-        );
-
+        return $this->createUniqueUser();
     }
 }

@@ -97,6 +97,30 @@ Where to find more docs in this repo
   - `FRONTEND_INTEGRATION_COMPLETE.md` — front-end build & integration notes.
   - `COUPLES_IMPLEMENTATION_COMPLETE.md` and `COUPLES_FEATURE_TEST_REPORT.md` — implementation status and test reports for Couples features.
 
+Searchable Firefly reference (local)
+----------------------------------
+
+There is a large, searchable plain-text export of Firefly documentation and repository context at `docs/firefly-docs.txt`. This file is handy when you need quick, offline access to examples, API references, migration notes, and larger README content from the upstream Firefly repo.
+
+Quick search examples:
+
+- PowerShell (case-insensitive):
+
+```powershell
+(Select-String -Path .\docs\firefly-docs.txt -Pattern 'createUser' -CaseSensitive:$false).Line
+```
+
+- Recursive grep (Unix / WSL / Git Bash):
+
+```bash
+grep -nI "createUser" docs/firefly-docs.txt
+```
+
+Notes:
+
+- The file can be large; prefer targeted keywords or short phrases. Use alternation in regex to search multiple terms at once (e.g., `createUser|RefreshDatabase`).
+- If you want help extracting a specific example or API contract from that file, tell me the search term and I will extract the relevant snippets and add them to the repo docs where appropriate.
+
 If you're an automated assistant (Copilot) running in this repo
 - Only modify code in small, reversible increments. Commit to `v2` branch and push. Provide a concise summary of changes and verification steps in the commit message.
 - Never run container restarts or destructive compose commands without explicit user consent.
