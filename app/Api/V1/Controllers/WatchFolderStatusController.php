@@ -33,16 +33,21 @@ class WatchFolderStatusController extends Controller
                 'status' => 'active'
             ];
 
+            // Stable envelope for clients: top-level 'status' and 'data' keys
             return response()->json([
+                'status' => 'success',
+                'timestamp' => now()->toISOString(),
                 'data' => $stats,
-                'links' => [],
-                'meta' => []
+                'links' => new \stdClass(),
+                'meta' => new \stdClass(),
             ]);
 
         } catch (\Exception $e) {
             Log::error('Error getting watch folder status: ' . $e->getMessage());
-            
+
             return response()->json([
+                'status' => 'error',
+                'timestamp' => now()->toISOString(),
                 'data' => [
                     'incoming_files' => 0,
                     'processed_files' => 0,
@@ -51,9 +56,9 @@ class WatchFolderStatusController extends Controller
                     'last_processed' => null,
                     'status' => 'error'
                 ],
-                'links' => [],
-                'meta' => []
-            ]);
+                'links' => new \stdClass(),
+                'meta' => new \stdClass(),
+            ], 500);
         }
     }
 

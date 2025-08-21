@@ -210,6 +210,34 @@ class Handler extends ExceptionHandler
     }
 
     /**
+     * Convert an authentication exception into a response.
+     *
+     * This overrides the parent behaviour which may call route('login') and
+     * throw a RouteNotFoundException when that named route does not exist.
+     */
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        if ($request->expectsJson()) {
+            $msg = $exception->getMessage();
+            if (!is_string($msg) || '' === trim($msg)) {
+                $msg = 'Unauthenticated.';
+            }
+
+            return response()->json(['message' => $msg, 'error' => 'Unauthenticated'], 401);
+        }
+
+        // Try to use a named login route, but fall back to the site root if
+        // the named route is not defined to avoid view-time errors.
+        try {
+            $login = route('login');
+        } catch (Throwable $t) {
+            $login = url('/');
+        }
+
+        return redirect()->guest($login);
+    }
+
+    /**
      * Report or log an exception.
      *
      * @throws Throwable

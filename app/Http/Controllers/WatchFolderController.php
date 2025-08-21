@@ -367,7 +367,7 @@ class WatchFolderController extends Controller
         try {
             $statistics = $this->watchFolderService->getStatistics();
             
-            // Add system information
+            // Add system information and return a stable envelope
             $status = [
                 'statistics' => $statistics,
                 'system_info' => [
@@ -386,7 +386,8 @@ class WatchFolderController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $status
+                'timestamp' => now()->toISOString(),
+                'data' => $status,
             ]);
 
         } catch (\Exception $e) {

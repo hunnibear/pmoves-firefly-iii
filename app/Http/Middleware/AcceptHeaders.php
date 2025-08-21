@@ -47,6 +47,21 @@ class AcceptHeaders
         $contentTypes = ['application/x-www-form-urlencoded', 'application/json', 'application/vnd.api+json', 'application/octet-stream'];
         $submitted    = (string) $request->header('Content-Type');
 
+        // For API endpoints we want the application to treat requests as JSON
+        // so that $request->expectsJson() will return true and auth failures
+        // will result in JSON 401 responses instead of HTML redirects.
+        // We only coerce the Accept header for paths under /api/*.
+        try {
+            if ($request->is('api/*')) {
+                $acceptHeader = (string) $request->header('Accept', '');
+                if ('' === $acceptHeader || (false === str_contains($acceptHeader, 'application/json') && false === str_contains($acceptHeader, 'application/vnd.api+json'))) {
+                    $request->headers->set('Accept', 'application/json');
+                }
+            }
+        } catch (\Throwable $e) {
+            // if something odd happens while inspecting the request, continue with normal flow
+        }
+
         // if bad Accept header, send error.
         if (!$request->accepts($accepts)) {
             throw new BadHttpHeaderException(sprintf('Accept header "%s" is not something this server can provide.', $request->header('Accept')));

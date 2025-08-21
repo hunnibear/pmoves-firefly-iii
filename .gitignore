@@ -90,3 +90,6 @@ tmp-*
 *.tmp
 *.temp
 sensitive-files.txt
+# Local tmp/inspection files
+tmp_*.txt
+tmp_*.json
