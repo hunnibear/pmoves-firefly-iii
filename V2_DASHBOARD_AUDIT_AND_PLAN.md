@@ -130,6 +130,36 @@ Invoke-WebRequest -Uri http://localhost:8080/api/v1/ai-agent/status -UseBasicPar
 
 ---
 
+## Progress update — Watch Folder
+
+Status: In-progress (changes applied in repository and validated in local container test runs).
+
+What was implemented (safe, reversible changes):
+
+- Coercion for API requests: `app/Http/Middleware/AcceptHeaders.php` was updated so requests to `/api/*` are treated as JSON (sets `Accept: application/json` when missing). This ensures API authentication failures return JSON 401 instead of HTML redirects.
+- Normalize unauthenticated handling: `app/Exceptions/Handler.php` now returns a stable JSON 401 body for requests that expect JSON, avoiding view-time named-route failures.
+- Hardened Watch Folder endpoints: both the API controller (`app/Api/V1/Controllers/WatchFolderStatusController.php`) and the web controller (`app/Http/Controllers/WatchFolderController.php`) now return a stable JSON envelope (top-level `status`, `timestamp`, `data`, `links`, `meta`) so the v2 UI has a predictable contract.
+- Tests: a minimal PHPUnit feature test (`tests/feature/WatchFolderStatusTest.php`) was added to assert unauthenticated API responses are JSON 401 and that an authenticated request returns a `status: success` envelope. These tests were executed inside the app container and passed.
+
+Quick verification performed:
+
+- Installed PHP deps inside the `app` container (composer install) so `vendor/bin/phpunit` is available.
+- Copied updated PHP files and the test into the running `app` container and ran `phpunit --no-coverage --debug` for the new test file; both tests passed. A minor warning about a missing `.env` was observed during tests but did not affect pass/fail.
+- Manually exercised `/api/v1/watch-folders/status` in the container and confirmed unauthenticated calls now return 401 JSON rather than 500 HTML errors.
+
+Next verification steps we recommend before wider enablement:
+
+- Run the front-end smoke checks with `FIREFLY_III_LAYOUT=v2` and confirm the Watch Folder widget receives the new envelope and renders counts/recents. Use the steps in "Testing guidance" above.
+- If you changed JS assets, rebuild the v2 frontend (`resources/assets/v2/npm ci && npm run build`) and clear view cache.
+- Optional: extend the Watch Folder test to assert `recent_files` and small extraction previews once the processing job writes previews beside processed files.
+
+Notes / guardrails:
+
+- All changes are additive and behind the API surface; no legacy templates were removed. Controllers were guarded or updated in a way that preserves v1 unless `FIREFLY_III_LAYOUT` is set to `v2`.
+- Avoid enabling v2 for production until front-end bundles are rebuilt and UI smoke checks pass.
+
+---
+
 ## Edge cases & risks
 
 - If code changes are made directly to many controllers, merging upstream changes later becomes hard. Keep changes minimal and place v2-only logic behind a single env flag.
