@@ -1436,6 +1436,14 @@ Route::group(
         Route::post('notifications/test', ['uses' => 'NotificationController@testNotification', 'as' => 'notification.test']);
 
         // Watch Folder management routes
+        // v2 UI route: serve the v2 watch-folders shell when FIREFLY_III_LAYOUT === 'v2'
+        Route::get('v2/watch-folders', static function () {
+            if (env('FIREFLY_III_LAYOUT') === 'v2') {
+                return view('v2.watch-folders.index');
+            }
+            return redirect()->route('watch-folders.index');
+        })->name('v2.watch-folders.index');
+
         Route::get('watch-folders', ['uses' => 'WatchFolderController@index', 'as' => 'watch-folders.index']);
         Route::get('watch-folders/create', ['uses' => 'WatchFolderController@create', 'as' => 'watch-folders.create']);
         Route::post('watch-folders', ['uses' => 'WatchFolderController@store', 'as' => 'watch-folders.store']);
