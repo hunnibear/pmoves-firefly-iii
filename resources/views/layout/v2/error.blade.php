@@ -3,6 +3,13 @@
 <head>
     {{-- route('index') was not guaranteed to exist; use url('/') as a safe fallback for base href --}}
     <base href="{{ url('/') }}/"/>
+        {{-- route('index') was not guaranteed to exist; prefer named route if present otherwise fallback to url('/') --}}
+        @php
+            // Prefer named routes when available, otherwise use URL fallbacks.
+            $indexHref = Route::has('index') ? route('index') : url('/');
+            $loginHref = Route::has('login') ? route('login') : url('/login');
+        @endphp
+        <base href="{{ rtrim($indexHref, '\/') }}\/" />
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>@yield('status_code') @yield('status') - Firefly III</title>
